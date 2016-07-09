@@ -1,0 +1,215 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mag Products Integration for WordPress\n"
+"POT-Creation-Date: 2016-03-12 13:10-0500\n"
+"PO-Revision-Date: 2015-11-18 09:07-0500\n"
+"Last-Translator: Francis Santerre <francis.santerre@gmail.com>\n"
+"Language-Team: Francis Santerre <francis.santerre@gmail.com>\n"
+"Language: en_CA\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-WPHeader: mag-products-integration.php\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: class.mag-products-integration-admin.php:57
+msgid "The cache storage has been flushed."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:110
+msgid "Magento module installation successfully verified."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:116
+msgid ""
+"Unable to verify the Magento module installation. Make sure to <strong>Flush "
+"Magento Cache</strong>!"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:222
+#, php-format
+msgid "The URL \"%s\" is invalid."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:234
+msgid ""
+"The given URL is valid but something went wrong while the plugin was trying "
+"to connect to the API. Please verify the error below."
+msgid_plural ""
+"The given URL is valid but something went wrong while the plugin was trying "
+"to connect to the API. Please verify the errors below."
+msgstr[0] ""
+msgstr[1] ""
+
+#: class.mag-products-integration-admin.php:242
+msgid "The API URL has been successfully validated."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:244
+#: class.mag-products-integration-admin.php:247
+msgid "The URL is not a valid API endpoint."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:263
+msgid "Magento Settings"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:266
+msgid ""
+"You have to <strong>enable REST API</strong> first in your Magento store and "
+"<strong>give the product API Resources</strong> to your Guest role. "
+"Otherwise, it will be impossible to retreive your products."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:269
+msgid ""
+"Magento module is optional. If you are not using it, make sure to use the "
+"cache to reduce page load time."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:277
+msgid "Magento REST API URL"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:281
+msgid ""
+"Do not forget to <strong>put the trailing slash</strong>. Ex: http://"
+"yourmagentostore.com/api/rest/"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:290
+msgid "Verify Magento module installation and get available stores"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:295
+msgid "Magento module installed"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:296
+msgid "Yes"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:299
+msgid "Available stores code"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:303
+msgid "Default store code"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:309
+msgid "Enable cache"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:318
+msgid "Cache lifetime"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:326
+msgid "Use jQuery script"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:332
+msgid "Automatically adjust height of all products block."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:344
+msgid "Flush cache"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:347
+msgid ""
+"For developers: <a target=\"_blank\" href=\"http://magentowp.santerref.com/"
+"documentation.html\"><strong>actions</strong> and <strong>filters</strong> "
+"documentation</a>."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:365
+msgid "1 hour"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:366
+msgid "6 hours"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:367
+msgid "12 hours"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:368
+msgid "1 day"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:369
+msgid "3 days"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:370
+msgid "1 week"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:371
+msgid "1 year"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:406
+#, php-format
+msgid ""
+"Please <a href=\"%s\">configure Magento plugin</a> before using the "
+"shortcode."
+msgstr ""
+
+#: class.mag-products-integration-admin.php:419
+msgid ""
+"Please verify Magento module installation and load available stores. <a id="
+"\"dismiss-module-notice\" href=\"#\">Dismiss this notice, I am not going to "
+"use the Magento module.</a>"
+msgstr ""
+
+#: class.mag-products-integration-admin.php:447
+#: class.mag-products-integration-admin.php:448
+msgid "Magento"
+msgstr ""
+
+#: class.mag-products-integration-shortcode.php:287
+msgid "Buy it now"
+msgstr ""
+
+#: class.mag-products-integration-shortcode.php:289
+msgid "View details"
+msgstr ""
+
+#: mag-products-integration.php:103
+msgid "Settings"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Mag Products Integration for WordPress"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://wordpress.org/plugins/mag-products-integration/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"This plugin let you display products of your Magento store, directly in your "
+"WordPress. It connects to Magento through the REST API."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Francis Santerre"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://santerref.com/"
+msgstr ""
