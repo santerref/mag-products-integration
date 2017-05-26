@@ -16,34 +16,46 @@
 }
 
 .magento-wrapper * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
 
 .magento-wrapper *:before,
 .magento-wrapper *:after {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
 
 .magento-wrapper ul.products {
     margin: 0;
     padding: 0;
+    width: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-flow: row wrap;
+    flex-flow: row wrap;
 }
 
 .magento-wrapper ul.products li.product {
     list-style: none;
     display: block;
-    float: left;
-    width: 33.33333333%;
     margin: 0 0 10px 0;
     padding: 0 5px;
+    width: 33%;
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
 }
 
 .magento-wrapper ul.products li.product .price .current-price {
-    color: #3399cc;
     font-size: 16px;
 }
 
@@ -51,7 +63,6 @@
     text-decoration: line-through;
     font-size: 14px;
     padding-left: 5px;
-    color: #858585;
 }
 
 .magento-wrapper ul.products li.product .url {
@@ -61,11 +72,5 @@
 
 .magento-wrapper ul.products li.product .url a {
     padding: 10px 20px;
-    background: #3399cc;
-    color: #FFFFFF;
     text-decoration: none;
-}
-
-.magento-wrapper ul.products li.product .url a:hover {
-    background: #2e8ab8;
 }

@@ -10,7 +10,7 @@ define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 Plugin Name: Mag Products Integration for WordPress
 Plugin URI: https://wordpress.org/plugins/mag-products-integration/
 Description: This plugin let you display products of your Magento store, directly in your WordPress. It connects to Magento through the REST API.
-Version: 1.2.4
+Version: 1.2.7
 Requires at least: 4.0
 Author: Francis Santerre
 Author URI: http://santerref.com/
@@ -25,7 +25,7 @@ require_once MAG_PRODUCTS_INTEGRATION_PLUGIN_PATH . 'class.mag-products-integrat
 /**
  * Class Mag
  *
- * @since 1.0.0
+ * @since   1.0.0
  *
  * @package Mag_Products_Integration
  */
@@ -73,11 +73,14 @@ class Mag {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		load_plugin_textdomain( 'mag-products-integration', false, basename( dirname( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'mag-products-integration', FALSE, basename( dirname( __FILE__ ) ) . '/languages' );
 		add_shortcode( 'magento', array( $this->shortcode, 'do_shortcode' ) );
 		add_action( 'init', array( self::$instance, 'init' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'euqueue_scripts' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );
+		add_action( 'wp_head', array( $this, 'output_colors_css' ), 999 );
+		add_action( 'customize_register', array( $this->admin, 'customize_register' ) );
+		add_action( 'customize_preview_init', array( $this->admin, 'customize_preview' ) );
 	}
 
 	/**
@@ -173,6 +176,43 @@ class Mag {
 	 */
 	public function deactivate() {
 
+	}
+
+	/**
+	 * Output customizer colours values into an inline CSS style.
+	 *
+	 * @since 1.2.7
+	 */
+	public function output_colors_css() {
+		$current_price_color = get_theme_mod( 'magento_color_current_price', '#3399cc' );
+		$regular_price_color = get_theme_mod( 'magento_color_regular_price', '#858585' );
+		$button_color        = get_theme_mod( 'magento_color_button', '#3399cc' );
+		$button_text_color   = get_theme_mod( 'magento_color_button_text', '#FFFFFF' );
+		$button_hover_color  = get_theme_mod( 'magento_color_button_hover', '#2e8ab8' );
+
+		ob_start();
+		?>
+        <style>
+            .magento-wrapper ul.products li.product .price .current-price {
+                color: <?php echo $current_price_color ?>;
+            }
+
+            .magento-wrapper ul.products li.product .price .regular-price {
+                color: <?php echo $regular_price_color ?>;
+            }
+
+            .magento-wrapper ul.products li.product .url a {
+                background: <?php echo $button_color ?>;
+                color: <?php echo $button_text_color ?>;
+            }
+
+            .magento-wrapper ul.products li.product .url a:hover {
+                background: <?php echo $button_hover_color ?>;
+            }
+        </style>
+		<?php
+		$css = ob_get_clean();
+		echo str_replace( array( "\t", "\n", "  " ), "", $css );
 	}
 }
 

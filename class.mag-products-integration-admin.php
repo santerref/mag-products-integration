@@ -8,7 +8,7 @@ define( 'MAG_PRODUCTS_INTEGRATION_MODULE_STORES_PATH', '/wordpress/plugin/stores
 /**
  * Class Mag_Admin
  *
- * @since 1.0.0
+ * @since   1.0.0
  *
  * @package Mag_Products_Integration
  */
@@ -42,7 +42,7 @@ class Mag_Admin {
 	 * @since 1.2.0
 	 */
 	public function dismiss_module_notice() {
-		update_option( 'mag_products_integration_dismiss_module_notice', true );
+		update_option( 'mag_products_integration_dismiss_module_notice', TRUE );
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Mag_Admin {
 	 */
 	public function flush_cache() {
 		Mag::get_instance()->get_cache()->force_update_cache();
-		
+
 		wp_send_json( array(
 			'message' => __( 'The cache storage has been flushed.', 'mag-products-integration' )
 		) );
@@ -68,7 +68,7 @@ class Mag_Admin {
 	 */
 	public function get_available_stores() {
 		$rest_api_url       = parse_url( get_option( 'mag_products_integration_rest_api_url' ) );
-		$magento_stores_url = $rest_api_url['scheme'] . '://' . $rest_api_url['host'] . preg_replace('/\/api\/rest\/?/','', $rest_api_url['path']) . MAG_PRODUCTS_INTEGRATION_MODULE_STORES_PATH;
+		$magento_stores_url = $rest_api_url['scheme'] . '://' . $rest_api_url['host'] . preg_replace( '/\/api\/rest\/?/', '', $rest_api_url['path'] ) . MAG_PRODUCTS_INTEGRATION_MODULE_STORES_PATH;
 		$response           = wp_remote_get( $magento_stores_url );
 		$json_response      = json_decode( $response['body'] );
 		update_option( 'mag_products_integration_stores_code', serialize( $json_response->stores ) );
@@ -96,10 +96,10 @@ class Mag_Admin {
 	 * @since 1.0.0
 	 */
 	public function verify_magento_module_installation() {
-		update_option( 'mag_products_integration_dismiss_module_notice', false );
+		update_option( 'mag_products_integration_dismiss_module_notice', FALSE );
 		$rest_api_url       = parse_url( get_option( 'mag_products_integration_rest_api_url' ) );
-		$random_code        = wp_generate_password( 16, false, false );
-		$magento_module_url = $rest_api_url['scheme'] . '://' . $rest_api_url['host'] . preg_replace('/\/api\/rest\/?/','', $rest_api_url['path']) . MAG_PRODUCTS_INTEGRATION_MODULE_VERIFY_INSTALLATION_PATH . '/code/' . $random_code;
+		$random_code        = wp_generate_password( 16, FALSE, FALSE );
+		$magento_module_url = $rest_api_url['scheme'] . '://' . $rest_api_url['host'] . preg_replace( '/\/api\/rest\/?/', '', $rest_api_url['path'] ) . MAG_PRODUCTS_INTEGRATION_MODULE_VERIFY_INSTALLATION_PATH . '/code/' . $random_code;
 		$response           = wp_remote_get( $magento_module_url );
 		$json_data          = array();
 		if ( ! $response instanceof \WP_Error && is_array( $response ) && $response['response']['code'] == 200 && ( $json_response = json_decode( $response['body'] ) ) ) {
@@ -150,7 +150,6 @@ class Mag_Admin {
 			$this,
 			'validate_rest_api_url'
 		) );
-		register_setting( 'mag_products_integration', 'mag_products_integration_jquery_script' );
 		register_setting( 'mag_products_integration', 'mag_products_integration_cache_enabled', array(
 			$this,
 			'validate_cache_enabled'
@@ -167,6 +166,15 @@ class Mag_Admin {
 		}
 
 		return $cache_enabled;
+	}
+
+	/**
+	 * Live preview color picker JS script.
+     *
+     * @since 1.2.7
+	 */
+	public function customize_preview() {
+		wp_enqueue_script( 'mag-products-integration-preview', plugins_url( '/js/preview.js', __FILE__ ), array( 'customize-preview', 'jquery' ) );
 	}
 
 	/**
@@ -211,8 +219,8 @@ class Mag_Admin {
 	 * @return string The URL if everything is fine, empty string otherwise.
 	 */
 	public function validate_rest_api_url( $mag_products_integration_rest_api_url ) {
-		$valid = false;
-		if ( get_option( 'mag_products_integration_rest_api_url_validated' ) && $mag_products_integration_rest_api_url == get_option( 'mag_products_integration_rest_api_url', null ) ) {
+		$valid = FALSE;
+		if ( get_option( 'mag_products_integration_rest_api_url_validated' ) && $mag_products_integration_rest_api_url == get_option( 'mag_products_integration_rest_api_url', NULL ) ) {
 			return $mag_products_integration_rest_api_url;
 		} else {
 			update_option( 'mag_products_integration_rest_api_url_validated', 0 );
@@ -236,9 +244,9 @@ class Mag_Admin {
 				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', $error );
 			}
 		} elseif ( is_array( $response ) && ! empty( $response['body'] ) ) {
-			$decoded_array = json_decode( $response['body'], true );
-			if ( $decoded_array !== null ) {
-				$valid = true;
+			$decoded_array = json_decode( $response['body'], TRUE );
+			if ( $decoded_array !== NULL ) {
+				$valid = TRUE;
 				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', __( 'The API URL has been successfully validated.', 'mag-products-integration' ), 'updated' );
 			} else {
 				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', __( 'The URL is not a valid API endpoint.', 'mag-products-integration' ) );
@@ -259,93 +267,82 @@ class Mag_Admin {
 	 */
 	public function page() {
 		?>
-		<div class="wrap">
-			<h2><?php _e( 'Magento Settings', 'mag-products-integration' ); ?></h2>
+        <div class="wrap">
+            <h2><?php _e( 'Magento Settings', 'mag-products-integration' ); ?></h2>
 			<?php settings_errors(); ?>
 
-			<p><?php _e( 'You have to <strong>enable REST API</strong> first in your Magento store and <strong>give the product API Resources</strong> to your Guest role. Otherwise, it will be impossible to retreive your products.', 'mag-products-integration' ); ?>
-			</p>
+            <p><?php _e( 'You have to <strong>enable REST API</strong> first in your Magento store and <strong>give the product API Resources</strong> to your Guest role. Otherwise, it will be impossible to retreive your products.', 'mag-products-integration' ); ?>
+            </p>
 
-			<p style="color: #b50000; font-weight: bold;"><?php _e( 'Magento module is optional. If you are not using it, make sure to use the cache to reduce page load time.', 'mag-products-integration' ); ?></p>
+            <p style="color: #b50000; font-weight: bold;"><?php _e( 'Magento module is optional. If you are not using it, make sure to use the cache to reduce page load time.', 'mag-products-integration' ); ?></p>
 
-			<form method="post" action="options.php">
+            <form method="post" action="options.php">
 				<?php settings_fields( 'mag_products_integration' ); ?>
 				<?php do_settings_sections( 'mag_products_integration' ); ?>
 
-				<table class="form-table">
-					<tr valign="top">
-						<th scope="row"><?php _e( 'Magento REST API URL', 'mag-products-integration' ); ?></th>
-						<td><input type="text" class="regular-text" name="mag_products_integration_rest_api_url"
-						           value="<?php echo esc_attr( get_option( 'mag_products_integration_rest_api_url' ) ); ?>"/>
+                <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row"><?php _e( 'Magento REST API URL', 'mag-products-integration' ); ?></th>
+                        <td><input type="text" class="regular-text" name="mag_products_integration_rest_api_url"
+                                   value="<?php echo esc_attr( get_option( 'mag_products_integration_rest_api_url' ) ); ?>"/>
 
-							<p class="description"><?php _e( 'Do not forget to <strong>put the trailing slash</strong>. Ex: http://yourmagentostore.com/api/rest/', 'mag-products-integration' ); ?></p>
-						</td>
-					</tr>
+                            <p class="description"><?php _e( 'Do not forget to <strong>put the trailing slash</strong>. Ex: http://yourmagentostore.com/api/rest/', 'mag-products-integration' ); ?></p>
+                        </td>
+                    </tr>
 
 					<?php if ( Mag::get_instance()->is_ready() && ! Mag::get_instance()->is_module_installed() ): ?>
-						<tr valign="top">
-							<th scope="row"></th>
-							<td>
-								<a href="#"
-								   id="verify-magento-module"><?php _e( 'Verify Magento module installation and get available stores', 'mag-products-integration' ); ?>
-									&#8594;</a></td>
-						</tr>
+                        <tr valign="top">
+                            <th scope="row"></th>
+                            <td>
+                                <a href="#"
+                                   id="verify-magento-module"><?php _e( 'Verify Magento module installation and get available stores', 'mag-products-integration' ); ?>
+                                    &#8594;</a></td>
+                        </tr>
 					<?php elseif ( Mag::get_instance()->is_ready() && Mag::get_instance()->is_module_installed() ): ?>
-						<tr valign="top">
-							<th scope="row"><?php _e( 'Magento module installed', 'mag-products-integration' ); ?></th>
-							<td><?php _e( 'Yes', 'mag-products-integration' ); ?></td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><?php _e( 'Available stores code', 'mag-products-integration' ); ?></th>
-							<td><?php echo esc_html( implode( ', ', unserialize( get_option( 'mag_products_integration_stores_code', array() ) ) ) ); ?></td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><?php _e( 'Default store code', 'mag-products-integration' ); ?></th>
-							<td><?php echo esc_html( get_option( 'mag_products_integration_default_store_code', '' ) ); ?></td>
-						</tr>
+                        <tr valign="top">
+                            <th scope="row"><?php _e( 'Magento module installed', 'mag-products-integration' ); ?></th>
+                            <td><?php _e( 'Yes', 'mag-products-integration' ); ?></td>
+                        </tr>
+                        <tr valign="top">
+                            <th scope="row"><?php _e( 'Available stores code', 'mag-products-integration' ); ?></th>
+                            <td><?php echo esc_html( implode( ', ', unserialize( get_option( 'mag_products_integration_stores_code', array() ) ) ) ); ?></td>
+                        </tr>
+                        <tr valign="top">
+                            <th scope="row"><?php _e( 'Default store code', 'mag-products-integration' ); ?></th>
+                            <td><?php echo esc_html( get_option( 'mag_products_integration_default_store_code', '' ) ); ?></td>
+                        </tr>
 					<?php endif; ?>
 
-					<tr valign="top">
-						<th scope="now"><?php _e( 'Enable cache', 'mag-products-integration' ); ?></th>
-						<td>
-							<input type="checkbox"
-							       name="mag_products_integration_cache_enabled"<?php echo Mag::get_instance()->get_cache()->is_enabled() ? ' checked' : ''; ?> />
-						</td>
-					</tr>
+                    <tr valign="top">
+                        <th scope="now"><?php _e( 'Enable cache', 'mag-products-integration' ); ?></th>
+                        <td>
+                            <input type="checkbox"
+                                   name="mag_products_integration_cache_enabled"<?php echo Mag::get_instance()->get_cache()->is_enabled() ? ' checked' : ''; ?> />
+                        </td>
+                    </tr>
 
 					<?php if ( Mag::get_instance()->get_cache()->is_enabled() ): ?>
-						<tr valign="top">
-							<th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
-							<td>
+                        <tr valign="top">
+                            <th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
+                            <td>
 								<?php $this->display_cache_lifetime_html( get_option( 'mag_products_integration_cache_lifetime', Mag_Cache::DEFAULT_CACHE_LIFETIME ) ); ?>
-							</td>
-						</tr>
+                            </td>
+                        </tr>
 					<?php endif; ?>
-
-					<tr valign="top">
-						<th scope="row"><?php _e( 'Use jQuery script', 'mag-products-integration' ); ?></th>
-						<td><input type="checkbox"<?php echo $this->use_jquery_script() ? ' checked' : ''; ?>
-						           name="mag_products_integration_jquery_script"
-						           value="<?php echo esc_attr( get_option( 'mag_products_integration_rest_api_url' ) ); ?>"/>
-
-							<span
-								class="description"><?php _e( 'Automatically adjust height of all products block.', 'mag-products-integration' ); ?></span>
-						</td>
-					</tr>
-				</table>
+                </table>
 
 				<?php if ( ! Mag::get_instance()->get_cache()->is_enabled() ): ?>
-					<input type="hidden" name="mag_products_integration_cache_lifetime"
-					       value="<?php echo Mag::get_instance()->get_cache()->get_lifetime(); ?>"/>
+                    <input type="hidden" name="mag_products_integration_cache_lifetime"
+                           value="<?php echo Mag::get_instance()->get_cache()->get_lifetime(); ?>"/>
 				<?php endif; ?>
 
-				<p class="submit">
-					<?php submit_button( null, 'primary', 'submit', false ); ?>
-					<?php submit_button( __( 'Flush cache', 'mag-products-integration' ), 'secondary', 'flush-cache', false ); ?>
-				</p>
-			</form>
-			<p><?php _e( 'For developers: <a target="_blank" href="http://magentowp.santerref.com/documentation.html"><strong>actions</strong> and <strong>filters</strong> documentation</a>.', 'mag-products-integration' ); ?></p>
-		</div>
+                <p class="submit">
+					<?php submit_button( NULL, 'primary', 'submit', FALSE ); ?>
+					<?php submit_button( __( 'Flush cache', 'mag-products-integration' ), 'secondary', 'flush-cache', FALSE ); ?>
+                </p>
+            </form>
+            <p><?php _e( 'For developers: <a target="_blank" href="http://magentowp.santerref.com/documentation.html"><strong>actions</strong> and <strong>filters</strong> documentation</a>.', 'mag-products-integration' ); ?></p>
+        </div>
 		<?php
 	}
 
@@ -387,12 +384,13 @@ class Mag_Admin {
 	/**
 	 * Tells if the jquery script is enabled or disabled
 	 *
-	 * @since 1.2.0
+	 * @since      1.2.0
+	 * @deprecated Since 1.2.7. The script has been replaced with flex-box.
 	 *
 	 * @return bool
 	 */
 	public function use_jquery_script() {
-		return get_option( 'mag_products_integration_jquery_script', true );
+		return get_option( 'mag_products_integration_jquery_script', TRUE );
 	}
 
 	/**
@@ -402,9 +400,9 @@ class Mag_Admin {
 	 */
 	public function notify_plugin_not_ready() {
 		?>
-		<div class="error notice is-dismissible">
-			<p><?php echo sprintf( __( 'Please <a href="%s">configure Magento plugin</a> before using the shortcode.', 'mag-products-integration' ), admin_url( 'admin.php?page=mag-products-integration%2Fclass.mag-products-integration-admin.php' ) ); ?></p>
-		</div>
+        <div class="error notice is-dismissible">
+            <p><?php echo sprintf( __( 'Please <a href="%s">configure Magento plugin</a> before using the shortcode.', 'mag-products-integration' ), admin_url( 'admin.php?page=mag-products-integration%2Fclass.mag-products-integration-admin.php' ) ); ?></p>
+        </div>
 		<?php
 	}
 
@@ -415,9 +413,9 @@ class Mag_Admin {
 	 */
 	public function notify_magento_module_not_verified() {
 		?>
-		<div class="error notice is-dismissible">
-			<p><?php _e( 'Please verify Magento module installation and load available stores. <a id="dismiss-module-notice" href="#">Dismiss this notice, I am not going to use the Magento module.</a>', 'mag-products-integration' ); ?></p>
-		</div>
+        <div class="error notice is-dismissible">
+            <p><?php _e( 'Please verify Magento module installation and load available stores. <a id="dismiss-module-notice" href="#">Dismiss this notice, I am not going to use the Magento module.</a>', 'mag-products-integration' ); ?></p>
+        </div>
 		<?php
 	}
 
@@ -430,7 +428,7 @@ class Mag_Admin {
 		if ( ! Mag::get_instance()->is_ready() ) {
 			add_action( 'admin_notices', array( $this, 'notify_plugin_not_ready' ) );
 		} elseif ( ! Mag::get_instance()->is_module_installed() ) {
-			$dismiss_module_notice = get_option( 'mag_products_integration_dismiss_module_notice', false );
+			$dismiss_module_notice = get_option( 'mag_products_integration_dismiss_module_notice', FALSE );
 			if ( ! $dismiss_module_notice ) {
 				add_action( 'admin_notices', array( $this, 'notify_magento_module_not_verified' ) );
 			}
@@ -451,5 +449,83 @@ class Mag_Admin {
 			array( Mag::get_instance()->get_admin(), 'page' ),
 			plugins_url( 'images/icon-16x16.png', __FILE__ )
 		);
+	}
+
+	/**
+	 * Register new customizer settings.
+	 *
+	 * @param $wp_customize \WP_Customize_Manager
+	 *
+	 * @since 1.2.7
+	 */
+	public function customize_register( $wp_customize ) {
+		$wp_customize->add_panel( 'magento_settings', array(
+			'title' => __( 'Magento', 'mag-products-integration' ),
+		) );
+
+		$wp_customize->add_section( 'magento_settings_colors', array(
+			'title' => __( 'Colors', 'mag-products-integration' ),
+			'panel' => 'magento_settings'
+		) );
+
+		$wp_customize->add_setting( 'magento_color_current_price', array(
+			'default'           => '#3399cc',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'transport'         => 'postMessage'
+		) );
+
+		$wp_customize->add_setting( 'magento_color_regular_price', array(
+			'default'           => '#858585',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'transport'         => 'postMessage'
+		) );
+
+		$wp_customize->add_setting( 'magento_color_button', array(
+			'default'           => '#3399cc',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'transport'         => 'postMessage'
+		) );
+
+		$wp_customize->add_setting( 'magento_color_button_text', array(
+			'default'           => '#FFFFFF',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'transport'         => 'postMessage'
+		) );
+
+		$wp_customize->add_setting( 'magento_color_button_hover', array(
+			'default'           => '#2e8ab8',
+			'sanitize_callback' => 'sanitize_hex_color',
+			'transport'         => 'postMessage'
+		) );
+
+		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_current_price', array(
+			'label'    => __( 'Current Price', 'mag-products-integration' ),
+			'settings' => 'magento_color_current_price',
+			'section'  => 'magento_settings_colors',
+		) ) );
+
+		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_regular_price', array(
+			'label'    => __( 'Regular Price', 'mag-products-integration' ),
+			'settings' => 'magento_color_regular_price',
+			'section'  => 'magento_settings_colors',
+		) ) );
+
+		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_button', array(
+			'label'    => __( 'Button', 'mag-products-integration' ),
+			'settings' => 'magento_color_button',
+			'section'  => 'magento_settings_colors',
+		) ) );
+
+		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_button_text', array(
+			'label'    => __( 'Button text', 'mag-products-integration' ),
+			'settings' => 'magento_color_button_text',
+			'section'  => 'magento_settings_colors',
+		) ) );
+
+		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_button_hover', array(
+			'label'    => __( 'Button hover', 'mag-products-integration' ),
+			'settings' => 'magento_color_button_hover',
+			'section'  => 'magento_settings_colors',
+		) ) );
 	}
 }

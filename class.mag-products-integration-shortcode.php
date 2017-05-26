@@ -5,7 +5,7 @@ namespace Mag_Products_Integration;
 /**
  * Class Mag_Shortcode
  *
- * @since 1.0.0
+ * @since   1.0.0
  *
  * @package Mag_Products_Integration
  */
@@ -19,20 +19,20 @@ class Mag_Shortcode {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array $filters Request parameters.
-	 * @param string $store Magento store code.
+	 * @param array  $filters Request parameters.
+	 * @param string $store   Magento store code.
 	 *
 	 * @return array|mixed|object
 	 */
-	public function retrieve_products( $filters, $store, $shortcode_id ) {
-		$fetch_from_magento = true;
+	public static function retrieve_products( $filters, $store, $shortcode_id ) {
+		$fetch_from_magento = TRUE;
 		$products           = array();
 		if ( Mag::get_instance()->get_cache()->is_enabled() ) {
 			if ( ! Mag::get_instance()->get_cache()->is_expired( $shortcode_id ) ) {
-				$fetch_from_magento = false;
+				$fetch_from_magento = FALSE;
 				$products           = Mag::get_instance()->get_cache()->get_cached_products( $shortcode_id );
 				if ( empty( $products ) ) {
-					$fetch_from_magento = true;
+					$fetch_from_magento = TRUE;
 				}
 			}
 		}
@@ -46,11 +46,11 @@ class Mag_Shortcode {
 
 				$get_filters = '';
 				$i           = 1;
-				$category    = false;
+				$category    = FALSE;
 				if ( isset( $filters['category'] ) ) {
 					$url .= '?category_id=' . $filters['category'];
 					unset( $filters['category'] );
-					$category = true;
+					$category = TRUE;
 				}
 				foreach ( $filters as $key => $value ) {
 					if ( $i == 1 && ! $category ) {
@@ -110,7 +110,7 @@ class Mag_Shortcode {
 
 			$response = wp_remote_get( $rest_api_url );
 			if ( $response['response']['code'] == 200 ) {
-				$products = json_decode( $response['body'], true );
+				$products = json_decode( $response['body'], TRUE );
 			}
 
 			$magento_module_installed = get_option( 'mag_products_integration_magento_module_installed', 0 );
@@ -127,16 +127,12 @@ class Mag_Shortcode {
 
 					$response = wp_remote_get( $single_product_rest_api_url );
 					if ( $response['response']['code'] == 200 ) {
-						$product_arr                     = json_decode( $response['body'], true );
+						$product_arr                     = json_decode( $response['body'], TRUE );
 						$products[ $key ]['url']         = $product_arr['url'];
 						$products[ $key ]['is_in_stock'] = $product_arr['is_in_stock'];
 						$products[ $key ]['type_id']     = $product_arr['type_id'];
 						$products[ $key ]['image_url']   = $product_arr['image_url'];
-						if ( isset( $product_arr['buy_now_url'] ) ) {
-							$products[ $key ]['buy_now_url'] = $product_arr['buy_now_url'];
-						} else {
-							$products[ $key ]['buy_now_url'] = '';
-						}
+						$products[ $key ]['buy_now_url'] = $product_arr['buy_now_url'];
 					}
 				}
 			}
@@ -153,7 +149,7 @@ class Mag_Shortcode {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array $atts Shortcode parameter.
+	 * @param array  $atts    Shortcode parameter.
 	 * @param string $content Currently not used.
 	 *
 	 * @return string Products list HTML.
@@ -176,13 +172,13 @@ class Mag_Shortcode {
 				'suffix'       => ' $',
 				'image_width'  => '',
 				'image_height' => '',
-				'hide_image'   => false
+				'hide_image'   => FALSE
 			), $atts, 'magento' );
 
 			if ( $atts['hide_image'] == 'true' ) {
-				$atts['hide_image'] = true;
+				$atts['hide_image'] = TRUE;
 			} elseif ( $atts['hide_image'] == 'false' ) {
-				$atts['hide_image'] = false;
+				$atts['hide_image'] = FALSE;
 			} else {
 				$atts['hide_image'] = (bool) intval( $atts['hide_image'] );
 			}
@@ -263,13 +259,13 @@ class Mag_Shortcode {
 						do_action( 'mag_products_integration_before_title', $product );
 						echo '<' . esc_attr( $atts['title'] ) . ' class="name">';
 						echo '<a' . ( ( ! empty( $atts['target'] ) ) ? ' target="' . esc_attr( $atts['target'] ) . '"' : '' ) . ' href="' . esc_url( $product['url'] ) . '">';
-						echo apply_filters( 'mag_products_integration_product_name', esc_html( $product['name'] ), $product['name'] );
+						echo apply_filters( 'mag_products_integration_product_name', esc_html( wp_strip_all_tags( $product['name'] ) ), $product['name'] );
 						echo '</a>';
 						echo '</' . esc_attr( $atts['title'] ) . '>';
 						do_action( 'mag_products_integration_after_title', $product );
 						if ( ! empty( $product['short_description'] ) ) {
 							do_action( 'mag_products_integration_before_short_description', $product );
-							echo apply_filters( 'mag_products_integration_product_short_description', '<div class="short-description"><p>' . esc_html( $product['short_description'] ) . '</p></div>', $product['short_description'] );
+							echo apply_filters( 'mag_products_integration_product_short_description', '<div class="short-description"><p>' . esc_html( wp_strip_all_tags( $product['short_description'] ) ) . '</p></div>', $product['short_description'] );
 							do_action( 'mag_products_integration_after_short_description', $product );
 						}
 						if ( $product['final_price_without_tax'] > 0 ) {
@@ -289,7 +285,11 @@ class Mag_Shortcode {
 						do_action( 'mag_products_integration_before_add_to_cart_button', $product );
 						echo '<div class="url">';
 						if ( $product['is_in_stock'] && $product['type_id'] == 'simple' ) {
-							echo apply_filters( 'mag_products_integration_product_buy_it_now_button', '<a class="buy-it-now" href="' . esc_html( $product['buy_now_url'] ) . '">' . __( 'Buy it now', 'mag-products-integration' ) . '</a>', $product['buy_now_url'] );
+							if ( ! empty( $product['buy_now_url'] ) ) {
+								echo apply_filters( 'mag_products_integration_product_buy_it_now_button', '<a class="buy-it-now" href="' . esc_html( $product['buy_now_url'] ) . '">' . __( 'Buy it now', 'mag-products-integration' ) . '</a>', $product['buy_now_url'] );
+							} else {
+								echo apply_filters( 'mag_products_integration_product_buy_it_now_button', '<a class="buy-it-now" href="' . esc_html( $product['url'] ) . '">' . __( 'Buy it now', 'mag-products-integration' ) . '</a>', $product['url'] );
+							}
 						} else {
 							echo apply_filters( 'mag_products_integration_product_view_details_button', '<a class="view-details" href="' . esc_html( $product['url'] ) . '">' . __( 'View details', 'mag-products-integration' ) . '</a>', $product['url'] );
 						}
@@ -299,9 +299,6 @@ class Mag_Shortcode {
 					}
 					echo '</ul></div>';
 					do_action( 'mag_products_integration_after_products' );
-					if ( Mag::get_instance()->get_admin()->use_jquery_script() ) {
-						echo '<script type="text/javascript">var max = -1; jQuery(".magento-wrapper ul > li").each(function() { var h = jQuery(this).height(); max = h > max ? h : max; }); jQuery(".magento-wrapper ul > li").css({height: max+"px"});</script>';
-					}
 				}
 			} else {
 				do_action( 'mag_products_integration_no_products_found' );

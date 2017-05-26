@@ -2,8 +2,8 @@
 Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.0
-Tested up to: 4.5
-Stable tag: 1.2.4
+Tested up to: 4.7
+Stable tag: 1.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,8 +51,21 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 1. Products listing
 2. Plugin's configuration page
 3. Page shortcode example
+4. Customizer settings
 
 == Changelog ==
+
+= 1.2.7 =
+* Fix PHP static function warning on debug mode
+* Remove JQuery script and replace with CSS flexbox
+* NEW Add customizer settings to modify the colours without rewriting the CSS
+
+= 1.2.6 =
+* Fix missing link on "Buy it now" when using the Magento extension
+* Strip all HTML tags on product name and product short_description by default
+
+= 1.2.5 =
+* Fix missing link on "Buy it now" button when "buy_now_url" is missing from REST API response.
 
 = 1.2.4 =
 * Fix Magento module requests when Magento is in a subdirectory.
