@@ -7,7 +7,7 @@
 .magento-wrapper ul.products:before,
 .magento-wrapper ul.products:after {
     display: table;
-    content: " ";
+    content: normal;
 }
 
 .magento-wrapper ul.products:after,
