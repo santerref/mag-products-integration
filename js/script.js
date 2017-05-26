@@ -25,6 +25,14 @@ jQuery(document).ready(function ($) {
         });
     });
 
+    $('input[name="mag_products_integration_cache_enabled"]').on('click', function () {
+        if ($(this).is(':checked')) {
+            $('.cache-lifetime').show();
+        } else {
+            $('.cache-lifetime').hide();
+        }
+    });
+
     $('#dismiss-module-notice').on('click', function (event) {
         event.preventDefault();
         var data = {

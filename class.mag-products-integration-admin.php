@@ -321,14 +321,12 @@ class Mag_Admin {
                         </td>
                     </tr>
 
-					<?php if ( Mag::get_instance()->get_cache()->is_enabled() ): ?>
-                        <tr valign="top">
-                            <th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
-                            <td>
-								<?php $this->display_cache_lifetime_html( get_option( 'mag_products_integration_cache_lifetime', Mag_Cache::DEFAULT_CACHE_LIFETIME ) ); ?>
-                            </td>
-                        </tr>
-					<?php endif; ?>
+                    <tr valign="top" class="cache-lifetime"<?php if ( ! Mag::get_instance()->get_cache()->is_enabled() ): ?> style="display: none;"<?php endif; ?>>
+                        <th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
+                        <td>
+                            <?php $this->display_cache_lifetime_html( get_option( 'mag_products_integration_cache_lifetime', Mag_Cache::DEFAULT_CACHE_LIFETIME ) ); ?>
+                        </td>
+                    </tr>
                 </table>
 
 				<?php if ( ! Mag::get_instance()->get_cache()->is_enabled() ): ?>
