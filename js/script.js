@@ -25,7 +25,7 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    $('input[name="mag_products_integration_cache_enabled"]').on('click', function () {
+    $('body').on('click', 'input[name="mag_products_integration_cache_enabled"]', function () {
         if ($(this).is(':checked')) {
             $('.cache-lifetime').show();
         } else {
