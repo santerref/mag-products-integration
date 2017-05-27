@@ -128,9 +128,9 @@ class Mag_Admin {
 	 * @param string $hook Hook executed which allow us to target a specific admin page.
 	 */
 	public function load_ajax_script( $hook ) {
-		wp_enqueue_script( 'ajax-notice', plugins_url( '/js/notice.js', __FILE__ ), array( 'jquery' ) );
+		wp_enqueue_script( 'ajax-notice', plugins_url( '/js/notice.min.js', __FILE__ ), array( 'jquery' ) );
 		if ( preg_match( '/^toplevel_page_mag-products-integration/i', $hook ) ) {
-			wp_enqueue_script( 'ajax-script', plugins_url( '/js/script.js', __FILE__ ), array( 'jquery' ) );
+			wp_enqueue_script( 'ajax-script', plugins_url( '/js/script.min.js', __FILE__ ), array( 'jquery' ) );
 		}
 		wp_localize_script( 'ajax-notice', 'ajax_object', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' )
@@ -174,7 +174,7 @@ class Mag_Admin {
      * @since 1.2.7
 	 */
 	public function customize_preview() {
-		wp_enqueue_script( 'mag-products-integration-preview', plugins_url( '/js/preview.js', __FILE__ ), array( 'customize-preview', 'jquery' ) );
+		wp_enqueue_script( 'mag-products-integration-preview', plugins_url( '/js/preview.min.js', __FILE__ ), array( 'customize-preview', 'jquery' ) );
 	}
 
 	/**
@@ -232,6 +232,10 @@ class Mag_Admin {
 			return '';
 		}
 
+		if ( ! preg_match( '/api\.php\?type=rest/i', $mag_products_integration_rest_api_url ) ) {
+			$mag_products_integration_rest_api_url = trailingslashit( $mag_products_integration_rest_api_url );
+		}
+
 		$response = wp_remote_get( $mag_products_integration_rest_api_url, array(
 			'headers' => array(
 				'Accept' => 'application/json'
@@ -239,20 +243,66 @@ class Mag_Admin {
 		) );
 
 		if ( $response instanceof \WP_Error ) {
-			add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', _n( 'The given URL is valid but something went wrong while the plugin was trying to connect to the API. Please verify the error below.', 'The given URL is valid but something went wrong while the plugin was trying to connect to the API. Please verify the errors below.', count( $response->errors ), 'mag-products-integration' ) );
+			add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url',
+				_n(
+					'Something went wrong while the plugin was trying to connect to the API. Please verify the error below.',
+					'Something went wrong while the plugin was trying to connect to the API. Please verify the errors below.',
+					count( $response->errors ), 'mag-products-integration'
+				)
+			);
 			foreach ( $response->get_error_messages() as $error ) {
 				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', $error );
 			}
 		} elseif ( is_array( $response ) && ! empty( $response['body'] ) ) {
-			$decoded_array = json_decode( $response['body'], TRUE );
-			if ( $decoded_array !== NULL ) {
-				$valid = TRUE;
-				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', __( 'The API URL has been successfully validated.', 'mag-products-integration' ), 'updated' );
+			$decoded_array = json_decode( $response['body'], true );
+			if ( $decoded_array !== null ) {
+				$valid = true;
+				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url',
+					__( 'The API URL has been successfully validated.', 'mag-products-integration' ), 'updated' );
 			} else {
-				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', __( 'The URL is not a valid API endpoint.', 'mag-products-integration' ) );
+				if ( preg_match( '/api\/rest\/$/i', $mag_products_integration_rest_api_url ) ) {
+					$mag_products_integration_rest_api_url_alternative = str_replace(
+						'api/rest/', 'api.php?type=rest',
+						$mag_products_integration_rest_api_url
+					);
+
+					$response = wp_remote_get( $mag_products_integration_rest_api_url_alternative, array(
+						'headers' => array(
+							'Accept' => 'application/json',
+						),
+					) );
+
+					if ( is_array( $response ) && ! empty( $response['body'] ) ) {
+						$decoded_array = json_decode( $response['body'], true );
+						if ( $decoded_array !== null ) {
+							$valid = true;
+							$mag_products_integration_rest_api_url = '';
+							add_settings_error(
+								'mag_products_integration',
+								'mag_products_integration_rest_api_url',
+								__(
+									sprintf(
+										'The REST API is enabled but the URL rewrite is not working. Read more here: %s',
+                                        '<a target="_blank" href="http://magentowp.santerref.com/htaccess.html">http://magentowp.santerref.com/htaccess.html</a>'
+									),
+									'mag-products-integration'
+								)
+							);
+						}
+					}
+				}
+
+				if ( ! $valid ) {
+					$mag_products_integration_rest_api_url = '';
+					add_settings_error(
+						'mag_products_integration', 'mag_products_integration_rest_api_url',
+						__( 'The URL is not a valid API endpoint.', 'mag-products-integration' )
+					);
+				}
 			}
 		} else {
-			add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', __( 'The URL is not a valid API endpoint.', 'mag-products-integration' ) );
+			add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url',
+				__( 'The URL is not a valid API endpoint.', 'mag-products-integration' ) );
 		}
 
 		update_option( 'mag_products_integration_rest_api_url_validated', intval( $valid ) );
@@ -313,26 +363,22 @@ class Mag_Admin {
                         </tr>
 					<?php endif; ?>
 
-                    <tr valign="top">
-                        <th scope="now"><?php _e( 'Enable cache', 'mag-products-integration' ); ?></th>
-                        <td>
-                            <input type="checkbox"
-                                   name="mag_products_integration_cache_enabled"<?php echo Mag::get_instance()->get_cache()->is_enabled() ? ' checked' : ''; ?> />
-                        </td>
-                    </tr>
+	                <?php if ( Mag::get_instance()->is_ready() ): ?>
+                        <tr valign="top">
+                            <th scope="now"><?php _e( 'Enable cache', 'mag-products-integration' ); ?></th>
+                            <td>
+                                <input type="checkbox" name="mag_products_integration_cache_enabled"<?php echo Mag::get_instance()->get_cache()->is_enabled() ? ' checked' : ''; ?> />
+                            </td>
+                        </tr>
 
-                    <tr valign="top" class="cache-lifetime"<?php if ( ! Mag::get_instance()->get_cache()->is_enabled() ): ?> style="display: none;"<?php endif; ?>>
-                        <th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
-                        <td>
-                            <?php $this->display_cache_lifetime_html( get_option( 'mag_products_integration_cache_lifetime', Mag_Cache::DEFAULT_CACHE_LIFETIME ) ); ?>
-                        </td>
-                    </tr>
+                        <tr valign="top" class="cache-lifetime"<?php if ( ! Mag::get_instance()->get_cache()->is_enabled() ): ?> style="display: none;"<?php endif; ?>>
+                            <th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
+                            <td>
+				                <?php $this->display_cache_lifetime_html( get_option( 'mag_products_integration_cache_lifetime', Mag_Cache::DEFAULT_CACHE_LIFETIME ) ); ?>
+                            </td>
+                        </tr>
+	                <?php endif; ?>
                 </table>
-
-				<?php if ( ! Mag::get_instance()->get_cache()->is_enabled() ): ?>
-                    <input type="hidden" name="mag_products_integration_cache_lifetime"
-                           value="<?php echo Mag::get_instance()->get_cache()->get_lifetime(); ?>"/>
-				<?php endif; ?>
 
                 <p class="submit">
 					<?php submit_button( NULL, 'primary', 'submit', FALSE ); ?>
