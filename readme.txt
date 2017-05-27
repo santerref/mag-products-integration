@@ -3,7 +3,7 @@ Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.0
 Tested up to: 4.7
-Stable tag: 1.2.7
+Stable tag: 1.2.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,14 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 4. Customizer settings
 
 == Changelog ==
+
+= 1.2.8 =
+* Improve errors handling when the REST API URL is not valid
+* Code optimization
+* Fix CSS flexbox Safari issue
+* Add a minified version of style.css
+* Add a minified version of the three JS scripts
+* DEVELOPER Add PHPUnit tests on [github](https://github.com/santerref/magento-products-integration "Github Repository")
 
 = 1.2.7 =
 * Fix PHP static function warning on debug mode

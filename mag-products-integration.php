@@ -10,7 +10,7 @@ define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 Plugin Name: Mag Products Integration for WordPress
 Plugin URI: https://wordpress.org/plugins/mag-products-integration/
 Description: This plugin let you display products of your Magento store, directly in your WordPress. It connects to Magento through the REST API.
-Version: 1.2.7
+Version: 1.2.8
 Requires at least: 4.0
 Author: Francis Santerre
 Author URI: http://santerref.com/
@@ -135,7 +135,7 @@ class Mag {
 	 * @return string Valid Magento REST API endpoint or empty string.
 	 */
 	public function is_ready() {
-		$is_ready = get_option( 'mag_products_integration_rest_api_url' );
+		$is_ready = get_option( 'mag_products_integration_rest_api_url' ) && get_option( 'mag_products_integration_rest_api_url_validated' );
 
 		return $is_ready;
 	}
