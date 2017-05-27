@@ -19,98 +19,41 @@ class Mag_Shortcode {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array  $filters Request parameters.
-	 * @param string $store   Magento store code.
+	 * @param array $filters Request parameters.
+	 * @param string $store Magento store code.
+	 * @param string $shortcode_id Unique identifier of the shortcode
 	 *
 	 * @return array|mixed|object
 	 */
 	public static function retrieve_products( $filters, $store, $shortcode_id ) {
-		$fetch_from_magento = TRUE;
+		$fetch_from_magento = true;
 		$products           = array();
 		if ( Mag::get_instance()->get_cache()->is_enabled() ) {
 			if ( ! Mag::get_instance()->get_cache()->is_expired( $shortcode_id ) ) {
-				$fetch_from_magento = FALSE;
+				$fetch_from_magento = false;
 				$products           = Mag::get_instance()->get_cache()->get_cached_products( $shortcode_id );
 				if ( empty( $products ) ) {
-					$fetch_from_magento = TRUE;
+					$fetch_from_magento = true;
 				}
 			}
 		}
 		if ( $fetch_from_magento ) {
-			$url      = 'products';
-			$base_url = get_option( 'mag_products_integration_rest_api_url' );
-			if ( substr( $base_url, - 1 ) !== '/' ) {
-				$base_url .= '/';
-			}
+			$url = 'products?';
+			$http_query = '';
+
 			if ( is_array( $filters ) && count( $filters ) > 0 ) {
+				$http_query = self::build_http_query( $filters, $store );
+			}
 
-				$get_filters = '';
-				$i           = 1;
-				$category    = FALSE;
-				if ( isset( $filters['category'] ) ) {
-					$url .= '?category_id=' . $filters['category'];
-					unset( $filters['category'] );
-					$category = TRUE;
-				}
-				foreach ( $filters as $key => $value ) {
-					if ( $i == 1 && ! $category ) {
-						$separator = '?';
-					} else {
-						$separator = '&';
-					}
-					switch ( $key ) {
-						case 'limit':
-						case 'order':
-						case 'dir':
-						case 'image_width':
-						case 'image_height':
-							$get_filters .= $separator . $key . "=" . urlencode( $value );
-							break;
-						case 'sku':
-							$get_filters .= $separator . "filter[" . $i . "][attribute]=" . $key;
-							$j = 0;
-							foreach ( $value as $v ) {
-								$get_filters .= "&filter[" . $i . "][in][" . $j . "]=" . urlencode( $v );
-								$j ++;
-							}
-							break;
-						case 'name':
-							foreach ( $value as $v ) {
-								$get_filters .= $separator . "filter[" . $i . "][attribute]=" . $key . "&filter[" . $i . "][like]=" . urlencode( $v );
-								if ( $i == 1 && ! $category ) {
-									$separator = '&';
-								}
-								$i ++;
-							}
-							break;
-					}
-					$i ++;
-				}
-
-				if ( ! empty( $get_filters ) ) {
-					$rest_api_url = get_option( 'mag_products_integration_rest_api_url' ) . $url . $get_filters;
-					$separator    = '&';
-				} else {
-					if ( $category ) {
-						$rest_api_url = get_option( 'mag_products_integration_rest_api_url' ) . $url;
-						$separator    = '&';
-					} else {
-						$rest_api_url = get_option( 'mag_products_integration_rest_api_url' ) . $url;
-						$separator    = '?';
-					}
-				}
-
-				if ( ! empty( $store ) ) {
-					$rest_api_url .= $separator . '___store=' . $store;
-				}
-
+			if ( ! empty( $http_query ) ) {
+				$rest_api_url = get_option( 'mag_products_integration_rest_api_url' ) . $url . $http_query;
 			} else {
 				$rest_api_url = get_option( 'mag_products_integration_rest_api_url' ) . $url;
 			}
 
 			$response = wp_remote_get( $rest_api_url );
 			if ( $response['response']['code'] == 200 ) {
-				$products = json_decode( $response['body'], TRUE );
+				$products = json_decode( $response['body'], true );
 			}
 
 			$magento_module_installed = get_option( 'mag_products_integration_magento_module_installed', 0 );
@@ -120,14 +63,15 @@ class Mag_Shortcode {
 			 */
 			if ( ! $magento_module_installed ) {
 				foreach ( $products as $key => $product ) {
-					$single_product_rest_api_url = preg_replace( '/\/products(.*)/', '/products/' . $product['entity_id'], $rest_api_url );
+					$single_product_rest_api_url = preg_replace( '/\/products(.*)/',
+						'/products/' . $product['entity_id'], $rest_api_url );
 					if ( ! empty( $store ) ) {
 						$single_product_rest_api_url .= '?___store=' . $store;
 					}
 
 					$response = wp_remote_get( $single_product_rest_api_url );
 					if ( $response['response']['code'] == 200 ) {
-						$product_arr                     = json_decode( $response['body'], TRUE );
+						$product_arr                     = json_decode( $response['body'], true );
 						$products[ $key ]['url']         = $product_arr['url'];
 						$products[ $key ]['is_in_stock'] = $product_arr['is_in_stock'];
 						$products[ $key ]['type_id']     = $product_arr['type_id'];
@@ -145,11 +89,75 @@ class Mag_Shortcode {
 	}
 
 	/**
+	 * Parse all shortcode filters and build an HTTP query.
+	 *
+	 * @since 1.2.8
+	 *
+	 * @param array $filters Request parameters.
+	 * @param string $store Magento store code.
+	 *
+	 * @return string
+	 */
+	protected static function build_http_query( $filters, $store ) {
+		$get_filters = array(
+			'filter' => array(),
+		);
+
+		$i = 1;
+
+		if ( isset( $filters['category'] ) ) {
+			$get_filters['category_id'] = $filters['category'];
+			unset( $filters['category'] );
+		}
+
+		foreach ( $filters as $key => $value ) {
+			switch ( $key ) {
+				case 'limit':
+				case 'order':
+				case 'dir':
+				case 'image_width':
+				case 'image_height':
+					$get_filters[ $key ] = $value;
+					break;
+				case 'sku':
+					$get_filters['filter'][ $i ] = array(
+						'attribute' => $key,
+					);
+
+					$get_filters['filter'][ $i ]['in'] = array();
+
+					$j = 0;
+					foreach ( $value as $v ) {
+						$get_filters['filter'][ $i ]['in'][ $j ] = $v;
+						$j ++;
+					}
+					break;
+				case 'name':
+					foreach ( $value as $v ) {
+						$get_filters['filter'][ $i ] = array(
+							'attribute' => $key,
+							'like' => $v,
+						);
+						$i ++;
+					}
+					break;
+			}
+			$i ++;
+		}
+
+		if ( ! empty( $store ) ) {
+			$get_filters['__store'] = $store;
+		}
+
+		return http_build_query( $get_filters );
+	}
+
+	/**
 	 * Render the products list.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array  $atts    Shortcode parameter.
+	 * @param array $atts Shortcode parameter.
 	 * @param string $content Currently not used.
 	 *
 	 * @return string Products list HTML.
@@ -157,28 +165,28 @@ class Mag_Shortcode {
 	public static function do_shortcode( $atts, $content = "" ) {
 		if ( Mag::get_instance()->is_ready() ) {
 			$atts = shortcode_atts( array(
-				'limit'        => '12',
-				'title'        => 'h2',
-				'class'        => '',
-				'sku'          => '',
-				'category'     => '',
-				'name'         => '',
-				'store'        => get_option( 'mag_products_integration_default_store_code', '' ),
-				'width'        => '100%',
-				'target'       => '',
-				'dir'          => 'desc',
-				'order'        => 'entity_id',
-				'prefix'       => '',
-				'suffix'       => ' $',
-				'image_width'  => '',
+				'limit' => '12',
+				'title' => 'h2',
+				'class' => '',
+				'sku' => '',
+				'category' => '',
+				'name' => '',
+				'store' => get_option( 'mag_products_integration_default_store_code', '' ),
+				'width' => '100%',
+				'target' => '',
+				'dir' => 'desc',
+				'order' => 'entity_id',
+				'prefix' => '',
+				'suffix' => ' $',
+				'image_width' => '',
 				'image_height' => '',
-				'hide_image'   => FALSE
+				'hide_image' => false,
 			), $atts, 'magento' );
 
 			if ( $atts['hide_image'] == 'true' ) {
-				$atts['hide_image'] = TRUE;
+				$atts['hide_image'] = true;
 			} elseif ( $atts['hide_image'] == 'false' ) {
-				$atts['hide_image'] = FALSE;
+				$atts['hide_image'] = false;
 			} else {
 				$atts['hide_image'] = (bool) intval( $atts['hide_image'] );
 			}
@@ -252,31 +260,41 @@ class Mag_Shortcode {
 							$image .= '<a' . ( ( ! empty( $atts['target'] ) ) ? ' target="' . esc_attr( $atts['target'] ) . '"' : '' ) . ' href="' . esc_url( $product['url'] ) . '">';
 							$image .= '<img style="width:' . esc_attr( $atts['width'] ) . '" src="' . esc_html( $product['image_url'] ) . '" alt="' . esc_html( $product['name'] ) . '" />';
 							$image .= '</a></div>';
-							$image = apply_filters( 'mag_products_integration_product_image', $image, $product, $atts['width'], $atts['image_width'], $atts['image_height'] );
+							$image = apply_filters( 'mag_products_integration_product_image', $image, $product,
+								$atts['width'], $atts['image_width'], $atts['image_height'] );
 							echo $image;
 							do_action( 'mag_products_integration_after_image', $product );
 						}
 						do_action( 'mag_products_integration_before_title', $product );
 						echo '<' . esc_attr( $atts['title'] ) . ' class="name">';
 						echo '<a' . ( ( ! empty( $atts['target'] ) ) ? ' target="' . esc_attr( $atts['target'] ) . '"' : '' ) . ' href="' . esc_url( $product['url'] ) . '">';
-						echo apply_filters( 'mag_products_integration_product_name', esc_html( wp_strip_all_tags( $product['name'] ) ), $product['name'] );
+						echo apply_filters( 'mag_products_integration_product_name',
+							esc_html( wp_strip_all_tags( $product['name'] ) ), $product['name'] );
 						echo '</a>';
 						echo '</' . esc_attr( $atts['title'] ) . '>';
 						do_action( 'mag_products_integration_after_title', $product );
 						if ( ! empty( $product['short_description'] ) ) {
 							do_action( 'mag_products_integration_before_short_description', $product );
-							echo apply_filters( 'mag_products_integration_product_short_description', '<div class="short-description"><p>' . esc_html( wp_strip_all_tags( $product['short_description'] ) ) . '</p></div>', $product['short_description'] );
+							echo apply_filters( 'mag_products_integration_product_short_description',
+								'<div class="short-description"><p>' . esc_html( wp_strip_all_tags( $product['short_description'] ) ) . '</p></div>',
+								$product['short_description'] );
 							do_action( 'mag_products_integration_after_short_description', $product );
 						}
 						if ( $product['final_price_without_tax'] > 0 ) {
 							do_action( 'mag_products_integration_before_price', $product );
 							echo '<div class="price">';
 							echo '<span class="current-price">';
-							echo apply_filters( 'mag_products_integration_product_final_price_without_tax', esc_attr( $atts['prefix'] ) . esc_html( number_format( $product['final_price_without_tax'], 2 ) ) . esc_attr( $atts['suffix'] ), $atts['prefix'], $product['final_price_without_tax'], $atts['suffix'] );
+							echo apply_filters( 'mag_products_integration_product_final_price_without_tax',
+								esc_attr( $atts['prefix'] ) . esc_html( number_format( $product['final_price_without_tax'],
+									2 ) ) . esc_attr( $atts['suffix'] ), $atts['prefix'],
+								$product['final_price_without_tax'], $atts['suffix'] );
 							echo '</span>';
 							if ( $product['regular_price_without_tax'] != $product['final_price_without_tax'] ) {
 								echo '<span class="regular-price">';
-								echo apply_filters( 'mag_products_integration_product_regular_price_without_tax', esc_attr( $atts['prefix'] ) . esc_html( number_format( $product['regular_price_without_tax'], 2 ) ) . esc_attr( $atts['suffix'] ), $atts['prefix'], $product['regular_price_without_tax'], $atts['suffix'] );
+								echo apply_filters( 'mag_products_integration_product_regular_price_without_tax',
+									esc_attr( $atts['prefix'] ) . esc_html( number_format( $product['regular_price_without_tax'],
+										2 ) ) . esc_attr( $atts['suffix'] ), $atts['prefix'],
+									$product['regular_price_without_tax'], $atts['suffix'] );
 								echo '</span>';
 							}
 							echo '</div>';
@@ -286,12 +304,18 @@ class Mag_Shortcode {
 						echo '<div class="url">';
 						if ( $product['is_in_stock'] && $product['type_id'] == 'simple' ) {
 							if ( ! empty( $product['buy_now_url'] ) ) {
-								echo apply_filters( 'mag_products_integration_product_buy_it_now_button', '<a class="buy-it-now" href="' . esc_html( $product['buy_now_url'] ) . '">' . __( 'Buy it now', 'mag-products-integration' ) . '</a>', $product['buy_now_url'] );
+								echo apply_filters( 'mag_products_integration_product_buy_it_now_button',
+									'<a class="buy-it-now" href="' . esc_html( $product['buy_now_url'] ) . '">' . __( 'Buy it now',
+										'mag-products-integration' ) . '</a>', $product['buy_now_url'] );
 							} else {
-								echo apply_filters( 'mag_products_integration_product_buy_it_now_button', '<a class="buy-it-now" href="' . esc_html( $product['url'] ) . '">' . __( 'Buy it now', 'mag-products-integration' ) . '</a>', $product['url'] );
+								echo apply_filters( 'mag_products_integration_product_buy_it_now_button',
+									'<a class="buy-it-now" href="' . esc_html( $product['url'] ) . '">' . __( 'Buy it now',
+										'mag-products-integration' ) . '</a>', $product['url'] );
 							}
 						} else {
-							echo apply_filters( 'mag_products_integration_product_view_details_button', '<a class="view-details" href="' . esc_html( $product['url'] ) . '">' . __( 'View details', 'mag-products-integration' ) . '</a>', $product['url'] );
+							echo apply_filters( 'mag_products_integration_product_view_details_button',
+								'<a class="view-details" href="' . esc_html( $product['url'] ) . '">' . __( 'View details',
+									'mag-products-integration' ) . '</a>', $product['url'] );
 						}
 						echo '</div>';
 						do_action( 'mag_products_integration_after_add_to_cart_button', $product );
