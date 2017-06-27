@@ -172,7 +172,6 @@ class Mag_Shortcode {
 				'category' => '',
 				'name' => '',
 				'store' => get_option( 'mag_products_integration_default_store_code', '' ),
-				'width' => '100%',
 				'target' => '',
 				'dir' => 'desc',
 				'order' => 'entity_id',
@@ -258,10 +257,17 @@ class Mag_Shortcode {
 							do_action( 'mag_products_integration_before_image', $product );
 							$image = '<div class="image">';
 							$image .= '<a' . ( ( ! empty( $atts['target'] ) ) ? ' target="' . esc_attr( $atts['target'] ) . '"' : '' ) . ' href="' . esc_url( $product['url'] ) . '">';
-							$image .= '<img style="width:' . esc_attr( $atts['width'] ) . '" src="' . esc_html( $product['image_url'] ) . '" alt="' . esc_html( $product['name'] ) . '" />';
+							$image .= '<img src="' . esc_html( $product['image_url'] ) . '" alt="' . esc_html( $product['name'] ) . '"';
+							if ( ! empty( $atts['image_width'] ) ) {
+								$image .= ' width="' . intval( $atts['image_width'] ) . '"';
+							}
+							if ( ! empty( $atts['image_height'] ) ) {
+								$image .= ' height="' . intval( $atts['image_height'] ) . '"';
+							}
+							$image .= '/>';
 							$image .= '</a></div>';
 							$image = apply_filters( 'mag_products_integration_product_image', $image, $product,
-								$atts['width'], $atts['image_width'], $atts['image_height'] );
+								$atts['image_width'], $atts['image_width'], $atts['image_height'] );
 							echo $image;
 							do_action( 'mag_products_integration_after_image', $product );
 						}

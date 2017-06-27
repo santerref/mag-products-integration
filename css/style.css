@@ -16,11 +16,13 @@
 }
 
 .magento-wrapper * {
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
 
 .magento-wrapper *:before,
 .magento-wrapper *:after {
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
 }
 
@@ -31,9 +33,9 @@
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
     -webkit-box-orient: horizontal;
     -webkit-box-direction: normal;
     -ms-flex-direction: row;
@@ -50,9 +52,11 @@
     margin: 0 0 10px 0;
     padding: 0 5px;
     width: 33%;
-    -webkit-box-flex: 1;
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
+}
+
+.magento-wrapper ul.products li.product .image img {
+    max-width: 100%;
+    height: auto;
 }
 
 .magento-wrapper ul.products li.product .price .current-price {
@@ -73,4 +77,5 @@
 .magento-wrapper ul.products li.product .url a {
     padding: 10px 20px;
     text-decoration: none;
+    display: inline-block;
 }

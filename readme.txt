@@ -2,7 +2,7 @@
 Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.0
-Tested up to: 4.7
+Tested up to: 4.8
 Stable tag: 1.2.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -34,9 +34,11 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 
 = Coming soon =
 
+* Show only one product in your posts or your pages with a shortcode (1.2.9)
 * OAuth authentication (1.3.0)
 * Possibility to set custom thumbnail for products without images (1.3.0)
 * Magento 2 compatibility (2.0.0)
+* PHPUnit tests on [github](https://github.com/santerref/magento-products-integration "Github Repository")
 
 == Installation ==
 
@@ -59,9 +61,12 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 * Improve errors handling when the REST API URL is not valid
 * Code optimization
 * Fix CSS flexbox Safari issue
+* Fix image_width and image_height attributes that were missing on the <img/> tag
+* Remove inline style attribute on the <img/> tag
 * Add a minified version of style.css
 * Add a minified version of the three JS scripts
-* DEVELOPER Add PHPUnit tests on [github](https://github.com/santerref/magento-products-integration "Github Repository")
+* PLEASE NOTE There are no media queries by default (breakpoints for mobile devices)
+* DEVELOPER Updated version on [github](https://github.com/santerref/magento-products-integration "Github Repository")
 
 = 1.2.7 =
 * Fix PHP static function warning on debug mode

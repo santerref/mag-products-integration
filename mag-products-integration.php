@@ -3,7 +3,7 @@
 namespace Mag_Products_Integration;
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
-define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_VERSION', '1.2.5' );
+define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_VERSION', '1.2.8' );
 define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
 /*
