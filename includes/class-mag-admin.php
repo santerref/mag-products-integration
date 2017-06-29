@@ -133,9 +133,9 @@ class Mag_Admin {
 	 * @param string $hook Hook executed which allow us to target a specific admin page.
 	 */
 	public function load_ajax_script( $hook ) {
-		wp_enqueue_script( 'ajax-notice', plugins_url( '/js/notice.min.js', __FILE__ ), array( 'jquery' ) );
+		wp_enqueue_script( 'ajax-notice', plugins_url( '/js/notice.min.js', dirname( __FILE__ ) ), array( 'jquery' ) );
 		if ( preg_match( '/^toplevel_page_mag-products-integration/i', $hook ) ) {
-			wp_enqueue_script( 'ajax-script', plugins_url( '/js/script.min.js', __FILE__ ), array( 'jquery' ) );
+			wp_enqueue_script( 'ajax-script', plugins_url( '/js/script.min.js', dirname( __FILE__ ) ), array( 'jquery' ) );
 		}
 		wp_localize_script( 'ajax-notice', 'ajax_object', array(
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -188,7 +188,7 @@ class Mag_Admin {
 	public function customize_preview() {
 		wp_enqueue_script(
 			'mag-products-integration-preview',
-			plugins_url( '/js/preview.min.js', __FILE__ ),
+			plugins_url( '/js/preview.min.js', dirname( __FILE__ ) ),
 			array( 'customize-preview', 'jquery' )
 		);
 	}
@@ -559,7 +559,7 @@ class Mag_Admin {
 			'manage_options',
 			__FILE__,
 			array( Mag::get_instance()->get_admin(), 'page' ),
-			plugins_url( 'images/icon-16x16.png', __FILE__ )
+			plugins_url( 'images/icon-16x16.png', dirname( __FILE__ ) )
 		);
 	}
 

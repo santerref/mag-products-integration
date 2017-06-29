@@ -90,7 +90,7 @@ class Mag {
 	 * @since 1.0.0
 	 */
 	public function euqueue_scripts() {
-		wp_enqueue_style( 'magento-style', plugins_url( 'css/style.min.css', __FILE__ ), array(), MAG_PRODUCTS_INTEGRATION_PLUGIN_VERSION );
+		wp_enqueue_style( 'magento-style', plugins_url( 'css/style.min.css', dirname( __FILE__ ) ), array(), MAG_PRODUCTS_INTEGRATION_PLUGIN_VERSION );
 	}
 
 	/**
