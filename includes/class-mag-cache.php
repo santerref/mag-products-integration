@@ -194,6 +194,9 @@ class Mag_Cache {
 	public function force_update_cache() {
 		update_option( 'mag_products_integration_call_magento_api', 1 );
 		delete_transient( 'mag_products_integration_cached_products' );
+
+		unset( $this->cached_products );
+		$this->cached_products = array();
 	}
 
 }
