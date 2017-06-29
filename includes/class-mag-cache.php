@@ -1,38 +1,67 @@
 <?php
+/**
+ * Cache wrapper over the transient functions of WordPress.
+ *
+ * @package Mag_Products_Integration
+ */
 
-namespace Mag_Products_Integration;
+namespace MagePress;
 
 /**
  * Class Mag_Cache
  *
  * @since 1.2.0
- *
- * @package Mag_Products_Integration
  */
 class Mag_Cache {
 
-	/** @const int DEFAULT_CACHE_LIFETIME 1 hour */
+	/**
+	 * 1 hour.
+	 *
+	 * @const int DEFAULT_CACHE_LIFETIME
+	 */
 	const DEFAULT_CACHE_LIFETIME = HOUR_IN_SECONDS;
 
-	/** @const bool DEFAULT_CACHE_ENABLED Enabled by default */
+	/**
+	 * Enabled by default.
+	 *
+	 * @const bool DEFAULT_CACHE_ENABLED
+	 */
 	const DEFAULT_CACHE_ENABLED = true;
 
-	/** @var string|int $lifetime Cache lifetime */
+	/**
+	 * Cache lifetime.
+	 *
+	 * @var string|int $lifetime
+	 */
 	protected $lifetime;
 
-	/** @var bool $enabled Cache enabled or not */
+	/**
+	 * Cache enabled or not.
+	 *
+	 * @var bool $enabled
+	 */
 	protected $enabled;
 
 	/**
-	 * @var bool $expired Cache expired or not
+	 * Cache expired or not.
+	 *
+	 * @var bool $expired
 	 * @since 1.2.2
 	 */
 	protected $expired;
 
-	/** @var array $cached_products Products in cache */
+	/**
+	 * Products in cache.
+	 *
+	 * @var array $cached_products
+	 */
 	protected $cached_products;
 
-	/** @var bool $call_magento_api Bypass cache and fetch products using REST API */
+	/**
+	 * Bypass cache and fetch products using REST API.
+	 *
+	 * @var bool $call_magento_api
+	 */
 	protected $call_magento_api;
 
 	/**
@@ -43,9 +72,9 @@ class Mag_Cache {
 	public function __construct() {
 		$this->load_options();
 		$this->cached_products = get_transient( 'mag_products_integration_cached_products' );
-		if ( $this->cached_products === false ) {
+		if ( false === $this->cached_products ) {
 			$this->cached_products = array();
-			$this->expired         = true;
+			$this->expired = true;
 		} else {
 			$this->expired = false;
 		}
@@ -60,16 +89,16 @@ class Mag_Cache {
 	 */
 	protected function load_options() {
 		$this->lifetime = get_option( 'mag_products_integration_cache_lifetime', self::DEFAULT_CACHE_LIFETIME );
-		// Compatibility with 1.2.1
-		if ( $this->lifetime == 'indefinite' ) {
+		// Compatibility with 1.2.1.
+		if ( 'indefinite' == $this->lifetime ) {
 			$this->lifetime = YEAR_IN_SECONDS;
 		}
-		$this->enabled          = get_option( 'mag_products_integration_cache_enabled', self::DEFAULT_CACHE_ENABLED );
+		$this->enabled = get_option( 'mag_products_integration_cache_enabled', self::DEFAULT_CACHE_ENABLED );
 		$this->call_magento_api = get_option( 'mag_products_integration_call_magento_api', 1 );
 	}
 
 	/**
-	 * Tells if the cache is enabled
+	 * Tells if the cache is enabled.
 	 *
 	 * @since 1.2.0
 	 *
@@ -80,24 +109,24 @@ class Mag_Cache {
 	}
 
 	/**
-	 * Get cache lifetime
+	 * Get cache lifetime.
 	 *
 	 * @since 1.2.0
 	 *
-	 * @return int lifetime in seconds
+	 * @return int Lifetime in seconds.
 	 */
 	public function get_lifetime() {
 		return $this->lifetime;
 	}
 
 	/**
-	 * Tells if the cache is expired or not
+	 * Tells if the cache is expired or not.
 	 *
 	 * @since 1.2.0
 	 *
-	 * @param string $shortcode_id Unique identifier of the shortcode
+	 * @param string $shortcode_id Unique identifier of the shortcode.
 	 *
-	 * @return bool Cache expired or not
+	 * @return bool Cache expired or not.
 	 */
 	public function is_expired( $shortcode_id = null ) {
 		if ( ! $this->expired ) {
@@ -114,11 +143,11 @@ class Mag_Cache {
 	}
 
 	/**
-	 * Load cached products from database using get_option()
+	 * Load cached products from database using get_option().
 	 *
 	 * @since 1.2.0
 	 *
-	 * @param string $shortcode_id Unique identifier of the shortcode
+	 * @param string $shortcode_id Unique identifier of the shortcode.
 	 *
 	 * @return array Products array, may be empty.
 	 */
@@ -131,9 +160,9 @@ class Mag_Cache {
 	 *
 	 * @since 1.2.0
 	 *
-	 * @param array $products Products to be saved
-	 * @param string $shortcode_id Unique identifier of the shortcode
-	 * @param bool|true $save Call update_option() or not
+	 * @param array     $products Products to be saved.
+	 * @param string    $shortcode_id Unique identifier of the shortcode.
+	 * @param bool|true $save Call update_option() or not.
 	 */
 	public function set_cached_products( $products, $shortcode_id, $save = true ) {
 		update_option( 'mag_products_integration_call_magento_api', 0 );
@@ -147,11 +176,11 @@ class Mag_Cache {
 	}
 
 	/**
-	 * Update transient cache
+	 * Update transient cache.
 	 *
 	 * @since 1.2.2
 	 *
-	 * @param $expiration int Time until expiration in seconds from now
+	 * @param int $expiration Time until expiration in seconds from now.
 	 */
 	public function update_expiration( $expiration ) {
 		set_transient( 'mag_products_integration_cached_products', $this->cached_products, $expiration );
