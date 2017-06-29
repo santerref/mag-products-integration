@@ -4,7 +4,7 @@ jQuery(document).ready(function ($) {
         var data = {
             'action': 'dismiss_module_notice'
         };
-        console.log($(this).closest('.is-dismissible').find('.notice-dismiss').trigger('click'));
+        $(this).closest('.is-dismissible').find('.notice-dismiss').trigger('click');
         $(this).closest('.notice-dismiss').trigger('click');
         jQuery.post(ajax_object.ajax_url, data, function(response){
 
