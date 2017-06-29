@@ -51,26 +51,24 @@ if ( ! function_exists( 'magepress' ) ) {
 	register_deactivation_hook( __FILE__, array( magepress(), 'deactivate' ) );
 }
 
-if ( is_admin() ) {
-	if ( ! function_exists( 'magepress_admin' ) ) {
-		/**
-		 * Create global instance of the plugin admin. Allows developer to remove/add plugin actions/filters.
-		 *
-		 * @since 1.2.2
-		 *
-		 * @return MagePress\Mag_Admin
-		 */
-		function magepress_admin() {
-			static $magepress_admin;
+if ( ! function_exists( 'magepress_admin' ) ) {
+	/**
+	 * Create global instance of the plugin admin. Allows developer to remove/add plugin actions/filters.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @return MagePress\Mag_Admin
+	 */
+	function magepress_admin() {
+		static $magepress_admin;
 
-			if ( ! isset( $magepress_admin ) ) {
-				$magepress_admin = MagePress\Mag::get_instance()->get_admin();
-				$magepress_admin->init();
-			}
-
-			return $magepress_admin;
+		if ( ! isset( $magepress_admin ) ) {
+			$magepress_admin = MagePress\Mag::get_instance()->get_admin();
+			$magepress_admin->init();
 		}
 
-		magepress_admin();
+		return $magepress_admin;
 	}
+
+	magepress_admin();
 }
