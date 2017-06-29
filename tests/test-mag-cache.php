@@ -15,7 +15,7 @@ class MagCacheTest extends WP_UnitTestCase {
 	}
 
 	function test_set_cached_products_with_save() {
-		magepress()->get_cache()->set_cached_products( [ 'a' => 'b' ], 'shortcode1' );
+		magepress()->get_cache()->set_cached_products( array( 'a' => 'b' ), 'shortcode1' );
 		$this->assertEquals( get_option( 'mag_products_integration_call_magento_api' ), 0 );
 
 		$cached_products = get_transient( 'mag_products_integration_cached_products' );
@@ -25,7 +25,7 @@ class MagCacheTest extends WP_UnitTestCase {
 	}
 
 	function test_set_cached_products_without_save() {
-		magepress()->get_cache()->set_cached_products( [ 'a' => 'b' ], 'shortcode1', false );
+		magepress()->get_cache()->set_cached_products( array( 'a' => 'b' ), 'shortcode1', false );
 		$this->assertEquals( get_option( 'mag_products_integration_call_magento_api' ), 0 );
 
 		$cached_products = get_transient( 'mag_products_integration_cached_products' );
@@ -33,7 +33,7 @@ class MagCacheTest extends WP_UnitTestCase {
 	}
 
 	function test_force_update_cache() {
-		magepress()->get_cache()->set_cached_products( [ 'a' => 'b' ], 'shortcode1' );
+		magepress()->get_cache()->set_cached_products( array( 'a' => 'b' ), 'shortcode1' );
 		magepress()->get_cache()->force_update_cache();
 
 		$this->assertEmpty( magepress()->get_cache()->get_cached_products( 'shortcode1' ) );
@@ -42,7 +42,7 @@ class MagCacheTest extends WP_UnitTestCase {
 	}
 
 	function test_update_expiration() {
-		magepress()->get_cache()->set_cached_products( [ 'a' => 'b' ], 'shortcode1' );
+		magepress()->get_cache()->set_cached_products( array( 'a' => 'b' ), 'shortcode1' );
 
 		sleep( 2 );
 

@@ -14,12 +14,16 @@ class MagAdminTest extends WP_UnitTestCase {
 	}
 
 	function test_registered_settings() {
-		do_action('admin_init');
+		do_action( 'admin_init' );
 
-		$registered_settings = get_registered_settings();
-		$this->assertArrayHasKey('mag_products_integration_rest_api_url', $registered_settings);
-		$this->assertArrayHasKey('mag_products_integration_cache_enabled', $registered_settings);
-		$this->assertArrayHasKey('mag_products_integration_cache_lifetime', $registered_settings);
+		global $wp_registered_settings;
+		if ( ! is_array( $wp_registered_settings ) ) {
+			$wp_registered_settings = array();
+		}
+
+		$this->assertArrayHasKey( 'mag_products_integration_rest_api_url', $wp_registered_settings );
+		$this->assertArrayHasKey( 'mag_products_integration_cache_enabled', $wp_registered_settings );
+		$this->assertArrayHasKey( 'mag_products_integration_cache_lifetime', $wp_registered_settings );
 	}
 
 }
