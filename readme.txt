@@ -1,9 +1,9 @@
 === Mag products integration for WordPress ===
 Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
-Requires at least: 4.0
-Tested up to: 4.8
-Stable tag: 1.2.10
+Requires at least: 4.6
+Tested up to: 4.9
+Stable tag: 1.2.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,13 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 4. Customizer settings
 
 == Changelog ==
+
+= 1.2.11 =
+* CAUTION The store attribute of the magento shortcode is now mandatory.
+* Fix wrong products links like /product/view/id/82797/...
+* Remove translations from the plugin and move them to [Translating WordPress](https://translate.wordpress.org/ "Translating WordPress")
+* DEVELOPER Clean up PHP code to respect WordPress Coding Standards
+* NEW Magento extension has been updated to 1.0.3 and is now on [github](https://github.com/santerref/beeweb-wordpressproducts "Github Repository")
 
 = 1.2.10 =
 * Fix wrong store parameters that prevents store filter to works

@@ -74,7 +74,6 @@ class Mag {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		load_plugin_textdomain( 'mag-products-integration', false, basename( dirname( __FILE__ ) ) . '/languages' );
 		add_shortcode( 'magento', array( $this->shortcode, 'do_shortcode' ) );
 		add_action( 'init', array( self::$instance, 'init' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'euqueue_scripts' ) );
