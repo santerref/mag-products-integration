@@ -14,7 +14,7 @@ class MagAdminTest extends WP_UnitTestCase {
 	}
 
 	function test_registered_settings() {
-		do_action( 'admin_init' );
+		magepress_admin()->register_settings();
 
 		global $wp_registered_settings, $new_whitelist_options;
 
