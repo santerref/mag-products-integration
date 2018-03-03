@@ -62,7 +62,7 @@ class Mag {
 	 */
 	public static function get_instance() {
 		if ( empty( self::$instance ) || ! self::$instance instanceof self ) {
-			self::$instance = new self;
+			self::$instance = new self();
 		}
 
 		return self::$instance;
@@ -202,20 +202,20 @@ class Mag {
 			?>
 			<style>
 				.magento-wrapper ul.products li.product .price .current-price {
-					color: <?php echo esc_html( $current_price_color ) ?>;
+					color: <?php echo esc_html( $current_price_color ); ?>;
 				}
 
 				.magento-wrapper ul.products li.product .price .regular-price {
-					color: <?php echo esc_html( $regular_price_color ) ?>;
+					color: <?php echo esc_html( $regular_price_color ); ?>;
 				}
 
 				.magento-wrapper ul.products li.product .url a {
-					background: <?php echo esc_html( $button_color ) ?>;
-					color: <?php echo esc_html( $button_text_color ) ?>;
+					background: <?php echo esc_html( $button_color ); ?>;
+					color: <?php echo esc_html( $button_text_color ); ?>;
 				}
 
 				.magento-wrapper ul.products li.product .url a:hover {
-					background: <?php echo esc_html( $button_hover_color ) ?>;
+					background: <?php echo esc_html( $button_hover_color ); ?>;
 				}
 			</style>
 			<?php

@@ -74,7 +74,7 @@ class Mag_Cache {
 		$this->cached_products = get_transient( 'mag_products_integration_cached_products' );
 		if ( false === $this->cached_products ) {
 			$this->cached_products = array();
-			$this->expired = true;
+			$this->expired         = true;
 		} else {
 			$this->expired = false;
 		}
@@ -93,7 +93,7 @@ class Mag_Cache {
 		if ( 'indefinite' == $this->lifetime ) {
 			$this->lifetime = YEAR_IN_SECONDS;
 		}
-		$this->enabled = get_option( 'mag_products_integration_cache_enabled', self::DEFAULT_CACHE_ENABLED );
+		$this->enabled          = get_option( 'mag_products_integration_cache_enabled', self::DEFAULT_CACHE_ENABLED );
 		$this->call_magento_api = get_option( 'mag_products_integration_call_magento_api', 1 );
 	}
 
