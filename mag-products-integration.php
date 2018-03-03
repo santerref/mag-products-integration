@@ -5,13 +5,13 @@
  * @package Mag_Products_Integration
  */
 
-defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+defined( 'ABSPATH' ) || die( 'No script kiddies please!' );
 
 /*
 Plugin Name: Mag Products Integration for WordPress
 Plugin URI: https://wordpress.org/plugins/mag-products-integration/
 Description: This plugin let you display products of your Magento store, directly in your WordPress. It connects to Magento through the REST API.
-Version: 1.2.8
+Version: 1.2.10
 Requires at least: 4.0
 Author: Francis Santerre
 Author URI: http://santerref.com/
@@ -19,7 +19,7 @@ Domain Path: /languages
 Text Domain: mag-products-integration
 */
 
-define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_VERSION', '1.2.8' );
+define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_VERSION', '1.2.10' );
 define( 'MAG_PRODUCTS_INTEGRATION_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MAG_PRODUCTS_INTEGRATION_MODULE_VERIFY_INSTALLATION_PATH', '/wordpress/plugin/verify' );
 define( 'MAG_PRODUCTS_INTEGRATION_MODULE_STORES_PATH', '/wordpress/plugin/stores' );

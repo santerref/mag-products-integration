@@ -3,7 +3,7 @@ Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.0
 Tested up to: 4.8
-Stable tag: 1.2.8
+Stable tag: 1.2.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 
 = Coming soon =
 
-* Show only one product in your posts or your pages with a shortcode (1.2.9)
+* Show only one product in your posts or your pages with a shortcode (1.3.0)
 * OAuth authentication (1.3.0)
 * Possibility to set custom thumbnail for products without images (1.3.0)
 * Magento 2 compatibility (2.0.0)
@@ -56,6 +56,17 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 4. Customizer settings
 
 == Changelog ==
+
+= 1.2.10 =
+* Fix wrong store parameters that prevents store filter to works
+* NEW Shortcode attribute "description" to control the product description length (can be numeric, true or false)
+
+= 1.2.9 =
+* PLEASE NOTE If you are using the Magento module, you must update it to 1.0.2 !
+* NEW Add new setting to disable customizer colors
+* Fix wrong product links with multiple stores
+* Fix PHP fatal error if wp_remote_get() returns WP_Error instance
+* DEVELOPER Refactoring PHP code for better readability
 
 = 1.2.8 =
 * Improve errors handling when the REST API URL is not valid

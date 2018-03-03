@@ -72,7 +72,9 @@ class Mag_Admin {
 		$magento_stores_url .= preg_replace( '/\/api\/rest\/?/', '', $rest_api_url['path'] );
 		$magento_stores_url .= MAG_PRODUCTS_INTEGRATION_MODULE_STORES_PATH;
 
-		$response = wp_remote_get( $magento_stores_url );
+		$response      = wp_remote_get( $magento_stores_url, array(
+			'timeout' => 10,
+		) );
 		$json_response = json_decode( $response['body'] );
 
 		update_option( 'mag_products_integration_stores_code', serialize( $json_response->stores ) );
@@ -101,25 +103,28 @@ class Mag_Admin {
 	 */
 	public function verify_magento_module_installation() {
 		update_option( 'mag_products_integration_dismiss_module_notice', false );
-		$rest_api_url = parse_url( get_option( 'mag_products_integration_rest_api_url' ) );
-		$random_code = wp_generate_password( 16, false, false );
+		$rest_api_url       = parse_url( get_option( 'mag_products_integration_rest_api_url' ) );
+		$random_code        = wp_generate_password( 16, false, false );
 		$magento_module_url = $rest_api_url['scheme'] . '://' . $rest_api_url['host'] . preg_replace( '/\/api\/rest\/?/', '', $rest_api_url['path'] ) . MAG_PRODUCTS_INTEGRATION_MODULE_VERIFY_INSTALLATION_PATH . '/code/' . $random_code;
-		$response = wp_remote_get( $magento_module_url );
-		$json_data = array();
-		$json_response = json_decode( $response['body'] );
+		$response           = wp_remote_get( $magento_module_url, array(
+			'timeout' => 10,
+		) );
+		$json_data          = array();
+		$json_response      = json_decode( $response['body'] );
 		if ( $json_response && ! $response instanceof \WP_Error && is_array( $response ) && 200 == $response['response']['code'] ) {
 			if ( $json_response->code == $random_code ) {
 				update_option( 'mag_products_integration_magento_module_installed', 1 );
 				$json_data = array(
 					'installed' => 1,
-					'message'   => __( 'Magento module installation successfully verified.', 'mag-products-integration' ),
+					'message' => __( 'Magento module installation successfully verified.', 'mag-products-integration' ),
 				);
 			}
 		} else {
 			$json_data = array(
 				'installed' => 0,
-				'message'   => __( 'Unable to verify the Magento module installation. Make sure to <strong>Flush Magento Cache</strong>!', 'mag-products-integration' ),
+				'message' => __( 'Unable to verify the Magento module installation. Make sure to <strong>Flush Magento Cache</strong>!', 'mag-products-integration' ),
 			);
+			update_option( 'mag_products_integration_default_store_code', '' );
 		}
 		wp_send_json( $json_data );
 		wp_die();
@@ -163,6 +168,7 @@ class Mag_Admin {
 			$this,
 			'validate_cache_lifetime',
 		) );
+		register_setting( 'mag_products_integration', 'mag_products_integration_disable_customizer_css' );
 	}
 
 	/**
@@ -261,6 +267,7 @@ class Mag_Admin {
 			'headers' => array(
 				'Accept' => 'application/json',
 			),
+			'timeout' => 10,
 		) );
 
 		if ( $response instanceof \WP_Error ) {
@@ -281,6 +288,7 @@ class Mag_Admin {
 				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url',
 					__( 'The API URL has been successfully validated.', 'mag-products-integration' ), 'updated'
 				);
+				update_option( 'mag_products_integration_default_store_code', '' );
 			} else {
 				if ( preg_match( '/api\/rest\/$/i', $mag_products_integration_rest_api_url ) ) {
 					$mag_products_integration_rest_api_url_alternative = str_replace(
@@ -292,12 +300,13 @@ class Mag_Admin {
 						'headers' => array(
 							'Accept' => 'application/json',
 						),
+						'timeout' => 10,
 					) );
 
 					if ( is_array( $response ) && ! empty( $response['body'] ) ) {
 						$decoded_array = json_decode( $response['body'], true );
 						if ( null !== $decoded_array ) {
-							$valid = true;
+							$valid                                 = true;
 							$mag_products_integration_rest_api_url = '';
 							add_settings_error(
 								'mag_products_integration',
@@ -355,6 +364,14 @@ class Mag_Admin {
 				<?php do_settings_sections( 'mag_products_integration' ); ?>
 
 				<table class="form-table">
+					<tr valign="top">
+						<th scope="now"><?php _e( 'Disable Customizer CSS', 'mag-products-integration' ); ?></th>
+						<td>
+							<input type="checkbox"
+								   name="mag_products_integration_disable_customizer_css"<?php echo get_option( 'mag_products_integration_disable_customizer_css', false ) ? ' checked' : ''; ?> />
+						</td>
+					</tr>
+
 					<tr valign="top">
 						<th scope="row"><?php _e( 'Magento REST API URL', 'mag-products-integration' ); ?></th>
 						<td><input type="text" class="regular-text" name="mag_products_integration_rest_api_url"
@@ -440,31 +457,31 @@ class Mag_Admin {
 		$options = array(
 			array(
 				'lifetime' => HOUR_IN_SECONDS,
-				'label'    => __( '1 hour', 'mag-products-integration' ),
+				'label' => __( '1 hour', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => 6 * HOUR_IN_SECONDS,
-				'label'    => __( '6 hours', 'mag-products-integration' ),
+				'label' => __( '6 hours', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => 12 * HOUR_IN_SECONDS,
-				'label'    => __( '12 hours', 'mag-products-integration' ),
+				'label' => __( '12 hours', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => DAY_IN_SECONDS,
-				'label'    => __( '1 day', 'mag-products-integration' ),
+				'label' => __( '1 day', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => 3 * DAY_IN_SECONDS,
-				'label'    => __( '3 days', 'mag-products-integration' ),
+				'label' => __( '3 days', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => WEEK_IN_SECONDS,
-				'label'    => __( '1 week', 'mag-products-integration' ),
+				'label' => __( '1 week', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => YEAR_IN_SECONDS,
-				'label'    => __( '1 year', 'mag-products-integration' ),
+				'label' => __( '1 year', 'mag-products-integration' ),
 			),
 		);
 
@@ -505,7 +522,7 @@ class Mag_Admin {
 				<?php
 				/* translators: Link to the plugin's configuration page. */
 				echo sprintf( __( 'Please <a href="%s">configure Magento plugin</a> before using the shortcode.', 'mag-products-integration' ),
-					admin_url( 'admin.php?page=mag-products-integration%2Fclass.mag-products-integration-admin.php' )
+					admin_url( 'admin.php?page=mag-products-integration%2Fincludes%2Fclass-mag-admin.php' )
 				); ?>
 			</p>
 		</div>
@@ -581,67 +598,67 @@ class Mag_Admin {
 		) );
 
 		$wp_customize->add_setting( 'magento_color_current_price', array(
-			'default'           => '#3399cc',
+			'default' => '#3399cc',
 			'sanitize_callback' => 'sanitize_hex_color',
-			'transport'         => 'postMessage',
+			'transport' => 'postMessage',
 		) );
 
 		$wp_customize->add_setting( 'magento_color_regular_price', array(
-			'default'           => '#858585',
+			'default' => '#858585',
 			'sanitize_callback' => 'sanitize_hex_color',
-			'transport'         => 'postMessage',
+			'transport' => 'postMessage',
 		) );
 
 		$wp_customize->add_setting( 'magento_color_button', array(
-			'default'           => '#3399cc',
+			'default' => '#3399cc',
 			'sanitize_callback' => 'sanitize_hex_color',
-			'transport'         => 'postMessage',
+			'transport' => 'postMessage',
 		) );
 
 		$wp_customize->add_setting( 'magento_color_button_text', array(
-			'default'           => '#FFFFFF',
+			'default' => '#FFFFFF',
 			'sanitize_callback' => 'sanitize_hex_color',
-			'transport'         => 'postMessage',
+			'transport' => 'postMessage',
 		) );
 
 		$wp_customize->add_setting( 'magento_color_button_hover', array(
-			'default'           => '#2e8ab8',
+			'default' => '#2e8ab8',
 			'sanitize_callback' => 'sanitize_hex_color',
-			'transport'         => 'postMessage',
+			'transport' => 'postMessage',
 		) );
 
 		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_current_price',
 			array(
-				'label'    => __( 'Current Price', 'mag-products-integration' ),
+				'label' => __( 'Current Price', 'mag-products-integration' ),
 				'settings' => 'magento_color_current_price',
-				'section'  => 'magento_settings_colors',
+				'section' => 'magento_settings_colors',
 			)
 		) );
 
 		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_regular_price',
 			array(
-				'label'    => __( 'Regular Price', 'mag-products-integration' ),
+				'label' => __( 'Regular Price', 'mag-products-integration' ),
 				'settings' => 'magento_color_regular_price',
-				'section'  => 'magento_settings_colors',
+				'section' => 'magento_settings_colors',
 			)
 		) );
 
 		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_button', array(
-			'label'    => __( 'Button', 'mag-products-integration' ),
+			'label' => __( 'Button', 'mag-products-integration' ),
 			'settings' => 'magento_color_button',
-			'section'  => 'magento_settings_colors',
+			'section' => 'magento_settings_colors',
 		) ) );
 
 		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_button_text', array(
-			'label'    => __( 'Button text', 'mag-products-integration' ),
+			'label' => __( 'Button text', 'mag-products-integration' ),
 			'settings' => 'magento_color_button_text',
-			'section'  => 'magento_settings_colors',
+			'section' => 'magento_settings_colors',
 		) ) );
 
 		$wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, 'magento_color_button_hover', array(
-			'label'    => __( 'Button hover', 'mag-products-integration' ),
+			'label' => __( 'Button hover', 'mag-products-integration' ),
 			'settings' => 'magento_color_button_hover',
-			'section'  => 'magento_settings_colors',
+			'section' => 'magento_settings_colors',
 		) ) );
 	}
 }

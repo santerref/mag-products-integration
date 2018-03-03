@@ -27,18 +27,18 @@ class Mag_Shortcode {
 	 */
 	public static function retrieve_products( $filters, $store, $shortcode_id ) {
 		$fetch_from_magento = true;
-		$products = array();
+		$products           = array();
 		if ( Mag::get_instance()->get_cache()->is_enabled() ) {
 			if ( ! Mag::get_instance()->get_cache()->is_expired( $shortcode_id ) ) {
 				$fetch_from_magento = false;
-				$products = Mag::get_instance()->get_cache()->get_cached_products( $shortcode_id );
+				$products           = Mag::get_instance()->get_cache()->get_cached_products( $shortcode_id );
 				if ( empty( $products ) ) {
 					$fetch_from_magento = true;
 				}
 			}
 		}
 		if ( $fetch_from_magento ) {
-			$url = 'products?';
+			$url        = 'products?';
 			$http_query = '';
 
 			if ( is_array( $filters ) && count( $filters ) > 0 ) {
@@ -51,8 +51,10 @@ class Mag_Shortcode {
 				$rest_api_url = get_option( 'mag_products_integration_rest_api_url' ) . $url;
 			}
 
-			$response = wp_remote_get( $rest_api_url );
-			if ( 200 == $response['response']['code'] ) {
+			$response = wp_remote_get( $rest_api_url, array(
+				'timeout' => 10,
+			) );
+			if ( is_array( $response ) && 200 == $response['response']['code'] ) {
 				$products = json_decode( $response['body'], true );
 			}
 
@@ -67,16 +69,19 @@ class Mag_Shortcode {
 						'/products/' . $product['entity_id'], $rest_api_url
 					);
 					if ( ! empty( $store ) ) {
-						$single_product_rest_api_url .= '?___store=' . $store;
+						$single_product_rest_api_url .= '?___store=' . $store . '&store=' . $store;
 					}
 
-					$response = wp_remote_get( $single_product_rest_api_url );
-					if ( 200 == $response['response']['code'] ) {
+					$response = wp_remote_get( $single_product_rest_api_url, array(
+						'timeout' => 10,
+					) );
+					if ( is_array( $response ) && 200 == $response['response']['code'] ) {
 						$product_arr = json_decode( $response['body'], true );
-						$products[ $key ]['url'] = $product_arr['url'];
+
+						$products[ $key ]['url']         = $product_arr['url'];
 						$products[ $key ]['is_in_stock'] = $product_arr['is_in_stock'];
-						$products[ $key ]['type_id'] = $product_arr['type_id'];
-						$products[ $key ]['image_url'] = $product_arr['image_url'];
+						$products[ $key ]['type_id']     = $product_arr['type_id'];
+						$products[ $key ]['image_url']   = $product_arr['image_url'];
 						$products[ $key ]['buy_now_url'] = $product_arr['buy_now_url'];
 					}
 				}
@@ -137,7 +142,7 @@ class Mag_Shortcode {
 					foreach ( $value as $v ) {
 						$get_filters['filter'][ $i ] = array(
 							'attribute' => $key,
-							'like'      => $v,
+							'like' => $v,
 						);
 						$i ++;
 					}
@@ -147,7 +152,8 @@ class Mag_Shortcode {
 		}
 
 		if ( ! empty( $store ) ) {
-			$get_filters['__store'] = $store;
+			$get_filters['___store'] = $store;
+			$get_filters['store']    = $store;
 		}
 
 		return http_build_query( $get_filters );
@@ -166,21 +172,22 @@ class Mag_Shortcode {
 	public static function do_shortcode( $atts, $content = '' ) {
 		if ( Mag::get_instance()->is_ready() ) {
 			$atts = shortcode_atts( array(
-				'limit'        => '12',
-				'title'        => 'h2',
-				'class'        => '',
-				'sku'          => '',
-				'category'     => '',
-				'name'         => '',
-				'store'        => get_option( 'mag_products_integration_default_store_code', '' ),
-				'target'       => '',
-				'dir'          => 'desc',
-				'order'        => 'entity_id',
-				'prefix'       => '',
-				'suffix'       => ' $',
-				'image_width'  => '',
+				'limit' => '12',
+				'title' => 'h2',
+				'class' => '',
+				'sku' => '',
+				'category' => '',
+				'name' => '',
+				'store' => get_option( 'mag_products_integration_default_store_code', '' ),
+				'target' => '',
+				'dir' => 'desc',
+				'order' => 'entity_id',
+				'prefix' => '',
+				'suffix' => ' $',
+				'image_width' => '',
 				'image_height' => '',
-				'hide_image'   => false,
+				'hide_image' => false,
+				'description' => true,
 			), $atts, 'magento' );
 
 			if ( 'true' == $atts['hide_image'] ) {
@@ -229,17 +236,35 @@ class Mag_Shortcode {
 				$filters['image_height'] = intval( $atts['image_height'] );
 			}
 
-			$store = '';
-			if ( ! empty( $atts['store'] ) ) {
+			$store = ! empty( $atts['store'] ) ? $atts['store'] : '';
+
+			$magento_module_installed = get_option( 'mag_products_integration_magento_module_installed', 0 );
+			if ( ! empty( $store ) && $magento_module_installed ) {
 				$available_stores = unserialize( get_option( 'mag_products_integration_stores_code', array() ) );
 				if ( in_array( $atts['store'], $available_stores ) ) {
 					$store = $atts['store'];
+				} else {
+					$store = '';
 				}
 			}
 
-			$shortcode_id = sha1( serialize( $filters ) . $store );
+			if ( empty( $store ) ) {
+				return '<p class="store-attribute-required">' . __( 'The "store" attribute of the shortcode [magento] is mandatory since 1.2.11. If the attribute is set, please make sure that the store code exists.', 'mag-products-integration' ) . '</p>';
+			}
 
-			$products = self::retrieve_products( $filters, $store, $shortcode_id );
+			$shortcode_id = sha1( serialize( $filters ) . $store );
+			$products     = self::retrieve_products( $filters, $store, $shortcode_id );
+
+			$description_length = false;
+			$show_description   = true;
+			if ( is_numeric( $atts['description'] ) ) {
+				$description_length = abs( intval( $atts['description'] ) );
+				if ( $description_length == 0 ) {
+					$show_description = false;
+				}
+			} else {
+				$show_description = filter_var( $atts['description'], FILTER_VALIDATE_BOOLEAN );
+			}
 
 			ob_start();
 			if ( ! empty( $products ) ) {
@@ -287,12 +312,17 @@ class Mag_Shortcode {
 						echo '</a>';
 						echo '</' . esc_attr( $atts['title'] ) . '>';
 						do_action( 'mag_products_integration_after_title', $product );
-						if ( ! empty( $product['short_description'] ) ) {
+						if ( ! empty( $product['short_description'] ) && true === $show_description ) {
 							do_action( 'mag_products_integration_before_short_description', $product );
+							$description = esc_html( wp_strip_all_tags( $product['short_description'] ) );
+							if ( false !== $description_length ) {
+								$description = substr( $description, 0, $description_length );
+							}
 							echo apply_filters(
 								'mag_products_integration_product_short_description',
-								'<div class="short-description"><p>' . esc_html( wp_strip_all_tags( $product['short_description'] ) ) . '</p></div>',
-								$product['short_description']
+								'<div class="short-description"><p>' . $description . '</p></div>',
+								$product['short_description'],
+								$description_length
 							);
 							do_action( 'mag_products_integration_after_short_description', $product );
 						}

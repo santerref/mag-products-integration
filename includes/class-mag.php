@@ -48,9 +48,9 @@ class Mag {
 	 * @since 1.0.0
 	 */
 	protected function __construct() {
-		$this->admin = new Mag_Admin();
+		$this->admin     = new Mag_Admin();
 		$this->shortcode = new Mag_Shortcode();
-		$this->cache = new Mag_Cache();
+		$this->cache     = new Mag_Cache();
 	}
 
 	/**
@@ -153,10 +153,10 @@ class Mag {
 	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
 	 */
 	public function is_module_installed() {
-		$url_validated = get_option( 'mag_products_integration_rest_api_url_validated' );
+		$url_validated      = get_option( 'mag_products_integration_rest_api_url_validated' );
 		$default_store_code = get_option( 'mag_products_integration_default_store_code' );
-		$module_installed = get_option( 'mag_products_integration_magento_module_installed' );
-		$stores_code = get_option( 'mag_products_integration_stores_code' );
+		$module_installed   = get_option( 'mag_products_integration_magento_module_installed' );
+		$stores_code        = get_option( 'mag_products_integration_stores_code' );
 
 		return ( $url_validated && ! empty( $default_store_code ) && ! empty( $module_installed ) && ! empty( $stores_code ) );
 	}
@@ -189,34 +189,38 @@ class Mag {
 	 * @since 1.2.7
 	 */
 	public function output_colors_css() {
-		$current_price_color = get_theme_mod( 'magento_color_current_price', '#3399cc' );
-		$regular_price_color = get_theme_mod( 'magento_color_regular_price', '#858585' );
-		$button_color = get_theme_mod( 'magento_color_button', '#3399cc' );
-		$button_text_color = get_theme_mod( 'magento_color_button_text', '#FFFFFF' );
-		$button_hover_color = get_theme_mod( 'magento_color_button_hover', '#2e8ab8' );
+		$hide_css = get_option( 'mag_products_integration_disable_customizer_css', false );
 
-		ob_start();
-		?>
-		<style>
-			.magento-wrapper ul.products li.product .price .current-price {
-				color: <?php echo $current_price_color ?>;
-			}
+		if ( false === $hide_css ) {
+			$current_price_color = get_theme_mod( 'magento_color_current_price', '#3399cc' );
+			$regular_price_color = get_theme_mod( 'magento_color_regular_price', '#858585' );
+			$button_color        = get_theme_mod( 'magento_color_button', '#3399cc' );
+			$button_text_color   = get_theme_mod( 'magento_color_button_text', '#FFFFFF' );
+			$button_hover_color  = get_theme_mod( 'magento_color_button_hover', '#2e8ab8' );
 
-			.magento-wrapper ul.products li.product .price .regular-price {
-				color: <?php echo $regular_price_color ?>;
-			}
+			ob_start();
+			?>
+			<style>
+				.magento-wrapper ul.products li.product .price .current-price {
+					color: <?php echo esc_html( $current_price_color ) ?>;
+				}
 
-			.magento-wrapper ul.products li.product .url a {
-				background: <?php echo $button_color ?>;
-				color: <?php echo $button_text_color ?>;
-			}
+				.magento-wrapper ul.products li.product .price .regular-price {
+					color: <?php echo esc_html( $regular_price_color ) ?>;
+				}
 
-			.magento-wrapper ul.products li.product .url a:hover {
-				background: <?php echo $button_hover_color ?>;
-			}
-		</style>
-		<?php
-		$css = ob_get_clean();
-		echo str_replace( array( "\t", "\n", '  ' ), '', $css );
+				.magento-wrapper ul.products li.product .url a {
+					background: <?php echo esc_html( $button_color ) ?>;
+					color: <?php echo esc_html( $button_text_color ) ?>;
+				}
+
+				.magento-wrapper ul.products li.product .url a:hover {
+					background: <?php echo esc_html( $button_hover_color ) ?>;
+				}
+			</style>
+			<?php
+			$css = ob_get_clean();
+			echo str_replace( array( "\t", "\n", '  ' ), '', $css );
+		}
 	}
 }
