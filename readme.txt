@@ -3,7 +3,7 @@ Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.6
 Tested up to: 4.9
-Stable tag: 1.2.11
+Stable tag: 1.2.12
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,12 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 4. Customizer settings
 
 == Changelog ==
+
+= 1.2.12 =
+* Fix responsive breakpoints (0-575px 1 column, 576-767px 2 columns, > 768px 3 columns)
+* NEW Action hook mag_products_integration_before_product to show content before each product
+* NEW Action hook mag_products_integration_after_product to show content after each product
+* NEW Filter hook mag_products_integration_product to add additional product infos
 
 = 1.2.11 =
 * CAUTION The store attribute of the magento shortcode is now mandatory.
