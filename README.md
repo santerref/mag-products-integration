@@ -1,7 +1,7 @@
 Magento products integration for WordPress
 =============
 
-[![Build Status](https://travis-ci.org/santerref/magento-products-integration.svg?branch=master)](https://travis-ci.org/santerref/magento-products-integration)
+[![Build Status](https://travis-ci.org/santerref/mag-products-integration.svg?branch=master)](https://travis-ci.org/santerref/magento-products-integration)
 
 This plugin use the Magento REST API to list products on your page or blog post.
 
