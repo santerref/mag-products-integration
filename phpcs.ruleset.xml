@@ -2,12 +2,9 @@
 <ruleset name="WordPress Coding Standards for Plugins">
 	<description>Generally-applicable sniffs for WordPress plugins</description>
 
-	<config name="installed_paths" value="wpcs" />
 	<rule ref="WordPress-Core" />
 	<rule ref="WordPress-Docs" />
 
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
-	<exclude-pattern>/tests/*</exclude-pattern>
-	<exclude-pattern>/wpcs/*</exclude-pattern>
 </ruleset>
