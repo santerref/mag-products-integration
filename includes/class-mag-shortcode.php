@@ -285,7 +285,9 @@ class Mag_Shortcode {
 					do_action( 'mag_products_integration_before_products' );
 					echo '<div class="magento-wrapper' . ( ( ! empty( $atts['class'] ) ) ? ' ' . esc_attr( $atts['class'] ) : '' ) . '"><ul class="products">';
 					foreach ( $products as $product ) {
+						$product = apply_filters( 'mag_products_integration_product', $product );
 						echo '<li class="product">';
+						do_action( 'mag_products_integration_before_product', $product );
 						if ( ! empty( $product['image_url'] ) && ! $atts['hide_image'] ) {
 							do_action( 'mag_products_integration_before_image', $product );
 							$image  = '<div class="image">';
@@ -381,6 +383,7 @@ class Mag_Shortcode {
 						}
 						echo '</div>';
 						do_action( 'mag_products_integration_after_add_to_cart_button', $product );
+						do_action( 'mag_products_integration_after_product', $product );
 						echo '</li>';
 					}
 					echo '</ul></div>';
