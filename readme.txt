@@ -2,7 +2,7 @@
 Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.6
-Tested up to: 5.2
+Tested up to: 5.3
 Stable tag: 1.2.12
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -34,9 +34,9 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 
 = Coming soon =
 
-* Show only one product in your posts or your pages with a shortcode (1.3.0)
+* Show only one product in your posts or your pages with a shortcode (1.4.0)
 * OAuth authentication (1.3.0)
-* Possibility to set custom thumbnail for products without images (1.3.0)
+* Possibility to set custom thumbnail for products without images (1.4.0)
 * Magento 2 compatibility (2.0.0)
 * PHPUnit tests on [github](https://github.com/santerref/magento-products-integration "Github Repository")
 
