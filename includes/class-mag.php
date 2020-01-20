@@ -29,13 +29,6 @@ class Mag {
 	protected $admin;
 
 	/**
-	 * Instance of Mag_Shortcode.
-	 *
-	 * @var Mag_Shortcode $shortcode
-	 */
-	protected $shortcode;
-
-	/**
 	 * Instance of Mag_Cache.
 	 *
 	 * @var Mag_Cache $cache
@@ -43,22 +36,29 @@ class Mag {
 	protected $cache;
 
 	/**
+	 * Instace of Mag_Store_Manager
+	 *
+	 * @var Mag_Store_Manager $store_manager
+	 */
+	protected $store_manager;
+
+	/**
 	 * Create the instances of $admin and $shortcode
 	 *
 	 * @since 1.0.0
 	 */
 	protected function __construct() {
-		$this->admin     = new Mag_Admin();
-		$this->shortcode = new Mag_Shortcode();
-		$this->cache     = new Mag_Cache();
+		$this->admin         = new Mag_Admin();
+		$this->cache         = new Mag_Cache();
+		$this->store_manager = new Mag_Store_Manager();
 	}
 
 	/**
 	 * Return the singleton of the current class.
 	 *
+	 * @return Mag Singleton
 	 * @since 1.0.0
 	 *
-	 * @return Mag Singleton
 	 */
 	public static function get_instance() {
 		if ( empty( self::$instance ) || ! self::$instance instanceof self ) {
@@ -74,7 +74,6 @@ class Mag {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		add_shortcode( 'magento', array( $this->shortcode, 'do_shortcode' ) );
 		add_action( 'init', array( self::$instance, 'init' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'euqueue_scripts' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );
@@ -95,11 +94,11 @@ class Mag {
 	/**
 	 * Add Settings link on the plugins page.
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param array $links Links shown under the plugin name in the plugins page.
 	 *
 	 * @return array
+	 * @since 1.0.0
+	 *
 	 */
 	public function add_action_links( $links ) {
 		$settings = array(
@@ -112,9 +111,9 @@ class Mag {
 	/**
 	 * Return the instance of the administration class.
 	 *
+	 * @return Mag_Admin Instance.
 	 * @since 1.0.0
 	 *
-	 * @return Mag_Admin Instance.
 	 */
 	public function get_admin() {
 		return $this->admin;
@@ -123,20 +122,24 @@ class Mag {
 	/**
 	 * Return the instance of the cache class.
 	 *
+	 * @return Mag_Cache Instance.
 	 * @since 1.2.0
 	 *
-	 * @return Mag_Cache Instance.
 	 */
 	public function get_cache() {
 		return $this->cache;
 	}
 
+	public function get_store_manager() {
+		return $this->store_manager;
+	}
+
 	/**
 	 * The plugin is ready when a valid API endpoint is available.
 	 *
+	 * @return string Valid Magento REST API endpoint or empty string.
 	 * @since 1.0.0
 	 *
-	 * @return string Valid Magento REST API endpoint or empty string.
 	 */
 	public function is_ready() {
 		$is_ready = get_option( 'mag_products_integration_rest_api_url' ) && get_option( 'mag_products_integration_rest_api_url_validated' );
@@ -147,9 +150,9 @@ class Mag {
 	/**
 	 * Determine if the plugin if fully installed or not.
 	 *
+	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
 	 * @since 1.0.0
 	 *
-	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
 	 */
 	public function is_module_installed() {
 		$url_validated      = get_option( 'mag_products_integration_rest_api_url_validated' );

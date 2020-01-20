@@ -72,7 +72,7 @@ class Mag_Admin {
 			get_option( 'mag_products_integration_rest_api_url' )
 		);
 
-		$magento_stores_url  = $rest_api_url['scheme'] . '://' . $rest_api_url['host'];
+		$magento_stores_url = $rest_api_url['scheme'] . '://' . $rest_api_url['host'];
 		$magento_stores_url .= preg_replace( '/\/api\/rest\/?/', '', $rest_api_url['path'] );
 		$magento_stores_url .= MAG_PRODUCTS_INTEGRATION_MODULE_STORES_PATH;
 
@@ -141,9 +141,10 @@ class Mag_Admin {
 	/**
 	 * Enqueue AJAX JavaScript script for the plugin admin page.
 	 *
+	 * @param string $hook Hook executed which allow us to target a specific admin page.
+	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $hook Hook executed which allow us to target a specific admin page.
 	 */
 	public function load_ajax_script( $hook ) {
 		wp_enqueue_script( 'ajax-notice', plugins_url( '/js/notice.min.js', dirname( __FILE__ ) ), array( 'jquery' ) );
@@ -168,41 +169,12 @@ class Mag_Admin {
 	 * @since 1.0.0
 	 */
 	public function register_settings() {
-		register_setting(
-			'mag_products_integration', 'mag_products_integration_rest_api_url', array(
-				$this,
-				'validate_rest_api_url',
-			)
-		);
-		register_setting(
-			'mag_products_integration', 'mag_products_integration_cache_enabled', array(
-				$this,
-				'validate_cache_enabled',
-			)
-		);
-		register_setting(
-			'mag_products_integration', 'mag_products_integration_cache_lifetime', array(
-				$this,
-				'validate_cache_lifetime',
-			)
-		);
-		register_setting( 'mag_products_integration', 'mag_products_integration_disable_customizer_css' );
-	}
-
-	/**
-	 * Validate the checkbox value for the "enable cache" option.
-	 *
-	 * @param int $cache_enabled The value of the checkbox on the admin page.
-	 *
-	 * @return bool Whether or not the cached is enabled by the user.
-	 */
-	public function validate_cache_enabled( $cache_enabled ) {
-		if ( empty( $cache_enabled ) ) {
-			Mag::get_instance()->get_cache()->force_update_cache();
+		register_setting( 'mag_products_integration', 'mag_products_integration_selected_store_class' );
+		if ( magepress_store_manager()->has_store() ) {
+			magepress_store_manager()->get_store()->register_settings();
 		}
-
-		return $cache_enabled;
 	}
+
 
 	/**
 	 * Live preview color picker JS script.
@@ -218,157 +190,6 @@ class Mag_Admin {
 	}
 
 	/**
-	 * Make sure that the lifetime is not altered.
-	 *
-	 * If the selected lifetime is different from the current, update to expire option value.
-	 *
-	 * @since 1.2.0
-	 *
-	 * @param int $mag_products_integration_cache_lifetime Lifetime choosen by the user.
-	 *
-	 * @return string Validated lifetime.
-	 */
-	public function validate_cache_lifetime( $mag_products_integration_cache_lifetime ) {
-		$valid_values = array(
-			HOUR_IN_SECONDS,
-			6 * HOUR_IN_SECONDS,
-			12 * HOUR_IN_SECONDS,
-			DAY_IN_SECONDS,
-			3 * DAY_IN_SECONDS,
-			WEEK_IN_SECONDS,
-			YEAR_IN_SECONDS,
-		);
-
-		$current_lifetime = Mag::get_instance()->get_cache()->get_lifetime();
-		if ( $mag_products_integration_cache_lifetime != $current_lifetime ) {
-			Mag::get_instance()->get_cache()->update_expiration( time() + $mag_products_integration_cache_lifetime );
-		}
-
-		if ( ! in_array( $mag_products_integration_cache_lifetime, $valid_values ) ) {
-			$mag_products_integration_cache_lifetime = Mag_Cache::DEFAULT_CACHE_LIFETIME;
-		}
-
-		return $mag_products_integration_cache_lifetime;
-	}
-
-	/**
-	 * Validate the syntax of the Magento REST API URL and verify if it's a valid API endpoint.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $mag_products_integration_rest_api_url URL of the Magento REST API endpoint.
-	 *
-	 * @return string The URL if everything is fine, empty string otherwise.
-	 */
-	public function validate_rest_api_url( $mag_products_integration_rest_api_url ) {
-		$valid = false;
-		if ( get_option( 'mag_products_integration_rest_api_url_validated' ) && get_option( 'mag_products_integration_rest_api_url', null ) == $mag_products_integration_rest_api_url ) {
-			return $mag_products_integration_rest_api_url;
-		} else {
-			update_option( 'mag_products_integration_rest_api_url_validated', 0 );
-			update_option( 'mag_products_integration_magento_module_installed', 0 );
-		}
-		if ( ! filter_var( $mag_products_integration_rest_api_url, FILTER_VALIDATE_URL ) ) {
-			add_settings_error(
-				'mag_products_integration', 'mag_products_integration_rest_api_url',
-				/* translators: REST API URL typed by the user. */
-				sprintf( __( 'The URL "%s" is invalid.', 'mag-products-integration' ), $mag_products_integration_rest_api_url )
-			);
-
-			return '';
-		}
-
-		if ( ! preg_match( '/api\.php\?type=rest/i', $mag_products_integration_rest_api_url ) ) {
-			$mag_products_integration_rest_api_url = trailingslashit( $mag_products_integration_rest_api_url );
-		}
-
-		$response = wp_remote_get(
-			$mag_products_integration_rest_api_url, array(
-				'headers' => array(
-					'Accept' => 'application/json',
-				),
-				'timeout' => 10,
-			)
-		);
-
-		if ( $response instanceof \WP_Error ) {
-			add_settings_error(
-				'mag_products_integration', 'mag_products_integration_rest_api_url',
-				_n(
-					'Something went wrong while the plugin was trying to connect to the API. Please verify the error below.',
-					'Something went wrong while the plugin was trying to connect to the API. Please verify the errors below.',
-					count( $response->errors ), 'mag-products-integration'
-				)
-			);
-			foreach ( $response->get_error_messages() as $error ) {
-				add_settings_error( 'mag_products_integration', 'mag_products_integration_rest_api_url', $error );
-			}
-		} elseif ( is_array( $response ) && ! empty( $response['body'] ) ) {
-			$decoded_array = json_decode( $response['body'], true );
-			if ( null !== $decoded_array ) {
-				$valid = true;
-				add_settings_error(
-					'mag_products_integration', 'mag_products_integration_rest_api_url',
-					__( 'The API URL has been successfully validated.', 'mag-products-integration' ), 'updated'
-				);
-				update_option( 'mag_products_integration_default_store_code', '' );
-			} else {
-				if ( preg_match( '/api\/rest\/$/i', $mag_products_integration_rest_api_url ) ) {
-					$mag_products_integration_rest_api_url_alternative = str_replace(
-						'api/rest/', 'api.php?type=rest',
-						$mag_products_integration_rest_api_url
-					);
-
-					$response = wp_remote_get(
-						$mag_products_integration_rest_api_url_alternative, array(
-							'headers' => array(
-								'Accept' => 'application/json',
-							),
-							'timeout' => 10,
-						)
-					);
-
-					if ( is_array( $response ) && ! empty( $response['body'] ) ) {
-						$decoded_array = json_decode( $response['body'], true );
-						if ( null !== $decoded_array ) {
-							$valid                                 = true;
-							$mag_products_integration_rest_api_url = '';
-							add_settings_error(
-								'mag_products_integration',
-								'mag_products_integration_rest_api_url',
-								sprintf( /* translators: Link to "How to enable rewrite" documentation page. */
-									__(
-										'The REST API is enabled but the URL rewrite is not working. Read more here: %s',
-										'mag-products-integration'
-									),
-									'<a target="_blank" href="http://magentowp.santerref.com/htaccess.html">http://magentowp.santerref.com/htaccess.html</a>'
-								)
-							);
-						}
-					}
-				}
-
-				if ( ! $valid ) {
-					$mag_products_integration_rest_api_url = '';
-					add_settings_error(
-						'mag_products_integration', 'mag_products_integration_rest_api_url',
-						__( 'The URL is not a valid API endpoint.', 'mag-products-integration' )
-					);
-				}
-			}
-		} else {
-			add_settings_error(
-				'mag_products_integration', 'mag_products_integration_rest_api_url',
-				__( 'The URL is not a valid API endpoint.', 'mag-products-integration' )
-			);
-		}
-
-		update_option( 'mag_products_integration_rest_api_url_validated', intval( $valid ) );
-
-		return $mag_products_integration_rest_api_url;
-	}
-
-	/**
 	 * Render the admin configuration page
 	 *
 	 * @since 1.0.0
@@ -378,87 +199,32 @@ class Mag_Admin {
 		<div class="wrap">
 			<h2><?php _e( 'Magento Settings', 'mag-products-integration' ); ?></h2>
 			<?php settings_errors(); ?>
-
-			<p>
-				<?php _e( 'You have to <strong>enable REST API</strong> first in your Magento store and <strong>give the product API Resources</strong> to your Guest role. Otherwise, it will be impossible to retreive your products.', 'mag-products-integration' ); ?>
-			</p>
-
-			<p style="color: #b50000; font-weight: bold;"><?php _e( 'Magento module is optional. If you are not using it, make sure to use the cache to reduce page load time.', 'mag-products-integration' ); ?></p>
-
 			<form method="post" action="options.php">
 				<?php settings_fields( 'mag_products_integration' ); ?>
 				<?php do_settings_sections( 'mag_products_integration' ); ?>
 
 				<table class="form-table">
 					<tr valign="top">
-						<th scope="now"><?php _e( 'Disable Customizer CSS', 'mag-products-integration' ); ?></th>
+						<th scope="now"><?php _e( 'Select your store', 'mag-products-integration' ); ?></th>
 						<td>
-							<input type="checkbox" name="mag_products_integration_disable_customizer_css"<?php echo get_option( 'mag_products_integration_disable_customizer_css', false ) ? ' checked' : ''; ?> />
+							<select name="mag_products_integration_selected_store_class">
+								<option value=""></option>
+								<?php foreach ( magepress_store_manager()->get_available_stores() as $store_class => $label ): ?>
+									<option <?php selected( $store_class, get_option( 'mag_products_integration_selected_store_class' ) ) ?> value="<?php esc_attr_e( $store_class ) ?>"><?php esc_html_e( $label ) ?></option>
+								<?php endforeach; ?>
+							</select>
 						</td>
 					</tr>
-
-					<tr valign="top">
-						<th scope="row"><?php _e( 'Magento REST API URL', 'mag-products-integration' ); ?></th>
-						<td><input type="text" class="regular-text" name="mag_products_integration_rest_api_url" value="<?php echo esc_attr( get_option( 'mag_products_integration_rest_api_url' ) ); ?>"/>
-
-							<p class="description"><?php _e( 'Do not forget to <strong>put the trailing slash</strong>. Ex: http://yourmagentostore.com/api/rest/', 'mag-products-integration' ); ?></p>
-						</td>
-					</tr>
-
-					<?php if ( Mag::get_instance()->is_ready() && ! Mag::get_instance()->is_module_installed() ) : ?>
+					<?php if ( magepress_store_manager()->has_store() ): ?>
 						<tr valign="top">
-							<th scope="row"></th>
-							<td>
-								<a href="#" id="verify-magento-module"><?php _e( 'Verify Magento module installation and get available stores', 'mag-products-integration' ); ?>&#8594;</a>
-							</td>
-						</tr>
-					<?php elseif ( Mag::get_instance()->is_ready() && Mag::get_instance()->is_module_installed() ) : ?>
-						<tr valign="top">
-							<th scope="row"><?php _e( 'Magento module installed', 'mag-products-integration' ); ?></th>
-							<td><?php _e( 'Yes', 'mag-products-integration' ); ?></td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><?php _e( 'Available stores code', 'mag-products-integration' ); ?></th>
-							<td><?php echo esc_html( implode( ', ', unserialize( get_option( 'mag_products_integration_stores_code', array() ) ) ) ); ?></td>
-						</tr>
-						<tr valign="top">
-							<th scope="row"><?php _e( 'Default store code', 'mag-products-integration' ); ?></th>
-							<td><?php echo esc_html( get_option( 'mag_products_integration_default_store_code', '' ) ); ?></td>
-						</tr>
-					<?php endif; ?>
-
-					<?php if ( Mag::get_instance()->is_ready() ) : ?>
-						<tr valign="top">
-							<th scope="now"><?php _e( 'Enable cache', 'mag-products-integration' ); ?></th>
-							<td>
-								<input type="checkbox" name="mag_products_integration_cache_enabled"<?php echo Mag::get_instance()->get_cache()->is_enabled() ? ' checked' : ''; ?> />
-							</td>
-						</tr>
-
-						<tr valign="top"
-							class="cache-lifetime"
-							<?php
-							if ( ! Mag::get_instance()->get_cache()->is_enabled() ) :
-								?>
-								style="display: none;"<?php endif; ?>>
-							<th scope="now"><?php _e( 'Cache lifetime', 'mag-products-integration' ); ?></th>
-							<td>
-								<?php
-								$this->display_cache_lifetime_html(
-									get_option(
-										'mag_products_integration_cache_lifetime',
-										Mag_Cache::DEFAULT_CACHE_LIFETIME
-									)
-								);
-								?>
+							<td colspan="2" style="background: #fcfcfc;">
+								<?php magepress_store_manager()->get_store()->admin_page(); ?>
 							</td>
 						</tr>
 					<?php endif; ?>
 				</table>
-
 				<p class="submit">
 					<?php submit_button( null, 'primary', 'submit', false ); ?>
-					<?php submit_button( __( 'Flush cache', 'mag-products-integration' ), 'secondary', 'flush-cache', false ); ?>
 				</p>
 			</form>
 			<p>
@@ -474,68 +240,12 @@ class Mag_Admin {
 	}
 
 	/**
-	 * Display <select> for cache lifetime
-	 *
-	 * @since 1.2.0
-	 *
-	 * @param int $default_lifetime Default lifetime to be selected.
-	 */
-	protected function display_cache_lifetime_html( $default_lifetime = Mag_Cache::DEFAULT_CACHE_LIFETIME ) {
-		// Compatibility with 1.2.1.
-		if ( 'indefinite' == $default_lifetime ) {
-			$default_lifetime = YEAR_IN_SECONDS;
-		}
-		$options = array(
-			array(
-				'lifetime' => HOUR_IN_SECONDS,
-				'label'    => __( '1 hour', 'mag-products-integration' ),
-			),
-			array(
-				'lifetime' => 6 * HOUR_IN_SECONDS,
-				'label'    => __( '6 hours', 'mag-products-integration' ),
-			),
-			array(
-				'lifetime' => 12 * HOUR_IN_SECONDS,
-				'label'    => __( '12 hours', 'mag-products-integration' ),
-			),
-			array(
-				'lifetime' => DAY_IN_SECONDS,
-				'label'    => __( '1 day', 'mag-products-integration' ),
-			),
-			array(
-				'lifetime' => 3 * DAY_IN_SECONDS,
-				'label'    => __( '3 days', 'mag-products-integration' ),
-			),
-			array(
-				'lifetime' => WEEK_IN_SECONDS,
-				'label'    => __( '1 week', 'mag-products-integration' ),
-			),
-			array(
-				'lifetime' => YEAR_IN_SECONDS,
-				'label'    => __( '1 year', 'mag-products-integration' ),
-			),
-		);
-
-		$html = '<select name="mag_products_integration_cache_lifetime">';
-		foreach ( $options as $option ) {
-			$html .= '<option value="' . $option['lifetime'] . '"';
-			if ( $option['lifetime'] == $default_lifetime ) {
-				$html .= ' selected';
-			}
-			$html .= '>' . $option['label'] . '</option>';
-		}
-		$html .= '</select>';
-
-		echo $html;
-	}
-
-	/**
 	 * Tells if the jquery script is enabled or disabled
 	 *
-	 * @since      1.2.0
+	 * @return bool
 	 * @deprecated Since 1.2.7. The script has been replaced with flex-box.
 	 *
-	 * @return bool
+	 * @since      1.2.0
 	 */
 	public function use_jquery_script() {
 		return get_option( 'mag_products_integration_jquery_script', true );
@@ -552,7 +262,7 @@ class Mag_Admin {
 			<p>
 				<?php
 				echo sprintf(
-					/* translators: Link to the plugin's configuration page. */
+				/* translators: Link to the plugin's configuration page. */
 					__( 'Please <a href="%s">configure Magento plugin</a> before using the shortcode.', 'mag-products-integration' ),
 					admin_url( 'admin.php?page=mag-products-integration%2Fincludes%2Fclass-mag-admin.php' )
 				);
@@ -589,7 +299,7 @@ class Mag_Admin {
 	 */
 	public function verify_settings() {
 		if ( ! Mag::get_instance()->is_ready() ) {
-			add_action( 'admin_notices', array( $this, 'notify_plugin_not_ready' ) );
+			//add_action( 'admin_notices', array( $this, 'notify_plugin_not_ready' ) );
 		} elseif ( ! Mag::get_instance()->is_module_installed() ) {
 			$dismiss_module_notice = get_option( 'mag_products_integration_dismiss_module_notice', false );
 			if ( ! $dismiss_module_notice ) {
