@@ -48,8 +48,8 @@ class Mag {
 	 * @since 1.0.0
 	 */
 	protected function __construct() {
-		$this->admin         = new Mag_Admin();
-		$this->cache         = new Mag_Cache();
+		$this->admin = new Mag_Admin();
+		$this->cache = new Mag_Cache();
 		$this->store_manager = new Mag_Store_Manager();
 	}
 
@@ -155,10 +155,10 @@ class Mag {
 	 *
 	 */
 	public function is_module_installed() {
-		$url_validated      = get_option( 'mag_products_integration_rest_api_url_validated' );
+		$url_validated = get_option( 'mag_products_integration_rest_api_url_validated' );
 		$default_store_code = get_option( 'mag_products_integration_default_store_code' );
-		$module_installed   = get_option( 'mag_products_integration_magento_module_installed' );
-		$stores_code        = get_option( 'mag_products_integration_stores_code' );
+		$module_installed = get_option( 'mag_products_integration_magento_module_installed' );
+		$stores_code = get_option( 'mag_products_integration_stores_code' );
 
 		return ( $url_validated && ! empty( $default_store_code ) && ! empty( $module_installed ) && ! empty( $stores_code ) );
 	}
@@ -193,12 +193,12 @@ class Mag {
 	public function output_colors_css() {
 		$hide_css = get_option( 'mag_products_integration_disable_customizer_css', false );
 
-		if ( false === $hide_css ) {
+		if ( false === $hide_css || empty( $hide_css ) ) {
 			$current_price_color = get_theme_mod( 'magento_color_current_price', '#3399cc' );
 			$regular_price_color = get_theme_mod( 'magento_color_regular_price', '#858585' );
-			$button_color        = get_theme_mod( 'magento_color_button', '#3399cc' );
-			$button_text_color   = get_theme_mod( 'magento_color_button_text', '#FFFFFF' );
-			$button_hover_color  = get_theme_mod( 'magento_color_button_hover', '#2e8ab8' );
+			$button_color = get_theme_mod( 'magento_color_button', '#3399cc' );
+			$button_text_color = get_theme_mod( 'magento_color_button_text', '#FFFFFF' );
+			$button_hover_color = get_theme_mod( 'magento_color_button_hover', '#2e8ab8' );
 
 			ob_start();
 			?>
