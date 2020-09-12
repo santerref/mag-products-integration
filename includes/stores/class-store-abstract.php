@@ -6,6 +6,9 @@ use MagePress\Mag_Product;
 
 abstract class Store_Abstract implements Store_Interface {
 
+	public function additional_verifications() {
+	}
+
 	protected function products_html( $products, $atts = [], $custom_template = null ) {
 		$html = '';
 
@@ -99,5 +102,13 @@ abstract class Store_Abstract implements Store_Interface {
 
 			return $value;
 		}
+	}
+
+	public function get_option_group() {
+		return 'mag_products_integration_' . sha1( base64_encode( static::class ) );
+	}
+
+	protected function register_setting( $option_name, $args = [] ) {
+		register_setting( $this->get_option_group(), $option_name, $args );
 	}
 }

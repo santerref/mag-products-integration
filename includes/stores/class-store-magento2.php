@@ -104,8 +104,8 @@ class Store_Magento2 extends Store_Abstract {
 	}
 
 	public function register_settings() {
-		register_setting( 'mag_products_integration', 'mag_products_integration_m2_base_url' );
-		register_setting( 'mag_products_integration', 'mag_products_integration_m2_access_token' );
+		$this->register_setting( 'mag_products_integration_m2_base_url' );
+		$this->register_setting( 'mag_products_integration_m2_access_token' );
 	}
 
 	protected function get_custom_attribute( array $custom_attributes, $attribute_code, $default_value ) {

@@ -7,6 +7,9 @@
 
 namespace MagePress;
 
+use MagePress\stores\Store_Interface;
+use MagePress\stores\Store_Magento1;
+
 /**
  * Class Mag_Admin
  *
@@ -32,6 +35,7 @@ class Mag_Admin {
 		add_action( 'wp_ajax_get_available_stores', array( $this, 'get_available_stores' ) );
 		add_action( 'wp_ajax_dismiss_module_notice', array( $this, 'dismiss_module_notice' ) );
 		add_action( 'wp_ajax_flush_cache', array( $this, 'flush_cache' ) );
+		add_action( 'wp_ajax_get_store_form', array( $this, 'get_store_form' ) );
 		$this->verify_settings();
 	}
 
@@ -139,6 +143,41 @@ class Mag_Admin {
 	}
 
 	/**
+	 * AJAX function to update the selected store settings form.
+	 *
+	 * Output response in HTML.
+	 *
+	 * @since 2.0.0
+	 */
+	public function get_store_form() {
+		if ( empty( $_GET['store_class'] ) ) {
+			wp_send_json_error( [
+				'message' => __( 'The "store_class" field is required.', 'mag-products-integration' ),
+			], 400 );
+		}
+
+		$store_class = stripslashes( urldecode( $_GET['store_class'] ) );
+		if ( ! class_exists( $store_class ) || ! in_array( Store_Interface::class, class_implements( $store_class ) ) ) {
+			wp_send_json_error( [
+				'message' => __( 'The selected store does not exist or is no longer available.', 'mag-products-integration' ),
+			], 400 );
+		}
+
+		/** @var Store_Interface $store */
+		$store = new $store_class;
+		update_option( 'mag_products_integration_selected_store_class', $store_class );
+
+		$option_group = $store->get_option_group();
+		echo "<input type='hidden' name='option_page' value='" . esc_attr( $option_group ) . "' />";
+		echo '<input type="hidden" name="action" value="update" />';
+		wp_nonce_field( "$option_group-options", '_wpnonce', false );
+		wp_original_referer_field( true, 'previous' );
+		echo $store->admin_page();
+
+		wp_die();
+	}
+
+	/**
 	 * Enqueue AJAX JavaScript script for the plugin admin page.
 	 *
 	 * @param string $hook Hook executed which allow us to target a specific admin page.
@@ -170,8 +209,9 @@ class Mag_Admin {
 	 */
 	public function register_settings() {
 		register_setting( 'mag_products_integration', 'mag_products_integration_selected_store_class' );
-		if ( magepress_store_manager()->has_store() ) {
-			magepress_store_manager()->get_store()->register_settings();
+		foreach ( magepress_store_manager()->get_available_stores() as $class => $label ) {
+			$store = new $class;
+			$store->register_settings();
 		}
 	}
 
@@ -200,32 +240,33 @@ class Mag_Admin {
 			<h2><?php _e( 'Magento Settings', 'mag-products-integration' ); ?></h2>
 			<?php settings_errors(); ?>
 			<form method="post" action="options.php">
-				<?php settings_fields( 'mag_products_integration' ); ?>
-				<?php do_settings_sections( 'mag_products_integration' ); ?>
-
-				<table class="form-table">
-					<tr valign="top">
-						<th scope="now"><?php _e( 'Select your store', 'mag-products-integration' ); ?></th>
-						<td>
-							<select name="mag_products_integration_selected_store_class">
-								<option value=""></option>
-								<?php foreach ( magepress_store_manager()->get_available_stores() as $store_class => $label ): ?>
-									<option <?php selected( $store_class, get_option( 'mag_products_integration_selected_store_class' ) ) ?> value="<?php esc_attr_e( $store_class ) ?>"><?php esc_html_e( $label ) ?></option>
-								<?php endforeach; ?>
-							</select>
-						</td>
-					</tr>
-					<?php if ( magepress_store_manager()->has_store() ): ?>
+				<fieldset>
+					<table class="form-table">
 						<tr valign="top">
-							<td colspan="2" style="background: #fcfcfc;">
-								<?php magepress_store_manager()->get_store()->admin_page(); ?>
+							<th scope="now"><?php _e( 'Select your store', 'mag-products-integration' ); ?></th>
+							<td>
+								<div style="display: flex; align-items: center;">
+									<select name="mag_products_integration_selected_store_class">
+										<?php foreach ( magepress_store_manager()->get_available_stores() as $store_class => $label ): ?>
+											<option <?php selected( $store_class, get_option( 'mag_products_integration_selected_store_class', Store_Magento1::class ) ) ?> value="<?php esc_attr_e( $store_class ) ?>"><?php esc_html_e( $label ) ?></option>
+										<?php endforeach; ?>
+									</select>
+									<img style="margin-left: 10px; display: none;" class="loading-gif" src="<?php echo includes_url( 'images/wpspin-2x.gif' ) ?>" width="16" height="16" alt="">
+								</div>
 							</td>
 						</tr>
-					<?php endif; ?>
-				</table>
-				<p class="submit">
-					<?php submit_button( null, 'primary', 'submit', false ); ?>
-				</p>
+					</table>
+					<div id="store-form">
+						<?php if ( magepress_store_manager()->has_store() ): ?>
+							<?php settings_fields( magepress_store_manager()->get_store()->get_option_group() ); ?>
+							<?php do_settings_sections( magepress_store_manager()->get_store()->get_option_group() ); ?>
+							<?php magepress_store_manager()->get_store()->admin_page(); ?>
+						<?php endif; ?>
+					</div>
+					<p class="submit">
+						<?php submit_button( null, 'primary', 'submit', false ); ?>
+					</p>
+				</fieldset>
 			</form>
 			<p>
 				<?php
@@ -273,38 +314,16 @@ class Mag_Admin {
 	}
 
 	/**
-	 * Show the Magento module not installed notice.
-	 *
-	 * @since 1.0.0
-	 */
-	public function notify_magento_module_not_verified() {
-		?>
-		<div class="error notice is-dismissible">
-			<p>
-				<?php
-				_e(
-					'Please verify Magento module installation and load available stores. <a id="dismiss-module-notice" href="#">Dismiss this notice, I am not going to use the Magento module.</a>',
-					'mag-products-integration'
-				);
-				?>
-			</p>
-		</div>
-		<?php
-	}
-
-	/**
 	 * Show notices if the plugin is not ready or the magento module not installed.
 	 *
 	 * @since 1.0.0
 	 */
 	public function verify_settings() {
-		if ( ! Mag::get_instance()->is_ready() ) {
-			//add_action( 'admin_notices', array( $this, 'notify_plugin_not_ready' ) );
-		} elseif ( ! Mag::get_instance()->is_module_installed() ) {
-			$dismiss_module_notice = get_option( 'mag_products_integration_dismiss_module_notice', false );
-			if ( ! $dismiss_module_notice ) {
-				add_action( 'admin_notices', array( $this, 'notify_magento_module_not_verified' ) );
+		if ( magepress_store_manager()->has_store() ) {
+			if ( ! magepress_store_manager()->get_store()->ready() ) {
+				add_action( 'admin_notices', array( $this, 'notify_plugin_not_ready' ) );
 			}
+			magepress_store_manager()->get_store()->additional_verifications();
 		}
 	}
 

@@ -2,13 +2,14 @@
 
 namespace MagePress;
 
+use MagePress\stores\Store_Abstract;
 use MagePress\stores\Store_Interface;
 use MagePress\stores\Store_Magento1;
 use MagePress\stores\Store_Magento2;
 
 class Mag_Store_Manager {
 
-	/** @var Store_Interface */
+	/** @var Store_Abstract */
 	protected $store;
 
 	protected static $stores = [

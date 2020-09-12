@@ -39,14 +39,14 @@ class Store_Magento1 extends Store_Abstract {
 				</td>
 			</tr>
 
-			<?php if ( Mag::get_instance()->is_ready() && ! Mag::get_instance()->is_module_installed() ) : ?>
+			<?php if ( Mag::get_instance()->is_ready() && ! $this->is_module_installed() ) : ?>
 				<tr valign="top">
 					<th scope="row"></th>
 					<td>
 						<a href="#" id="verify-magento-module"><?php _e( 'Verify Magento module installation and get available stores', 'mag-products-integration' ); ?>&#8594;</a>
 					</td>
 				</tr>
-			<?php elseif ( Mag::get_instance()->is_ready() && Mag::get_instance()->is_module_installed() ) : ?>
+			<?php elseif ( Mag::get_instance()->is_ready() && $this->is_module_installed() ) : ?>
 				<tr valign="top">
 					<th scope="row"><?php _e( 'Magento module installed', 'mag-products-integration' ); ?></th>
 					<td><?php _e( 'Yes', 'mag-products-integration' ); ?></td>
@@ -70,7 +70,7 @@ class Store_Magento1 extends Store_Abstract {
 				</tr>
 
 				<tr valign="top"
-				    class="cache-lifetime"
+					class="cache-lifetime"
 					<?php
 					if ( ! Mag::get_instance()->get_cache()->is_enabled() ) :
 						?>
@@ -85,12 +85,11 @@ class Store_Magento1 extends Store_Abstract {
 							)
 						);
 						?>
+						<button type="button" class="button button-secondary" data-flush-cache><?php _e( 'Flush cache', 'mag-products-integration' ) ?></button>
 					</td>
 				</tr>
 			<?php endif; ?>
 		</table>
-
-		<!--		--><?php //submit_button( __( 'Flush cache', 'mag-products-integration' ), 'secondary', 'flush-cache', false ); ?>
 		<?php
 	}
 
@@ -110,31 +109,31 @@ class Store_Magento1 extends Store_Abstract {
 		$options = array(
 			array(
 				'lifetime' => HOUR_IN_SECONDS,
-				'label'    => __( '1 hour', 'mag-products-integration' ),
+				'label' => __( '1 hour', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => 6 * HOUR_IN_SECONDS,
-				'label'    => __( '6 hours', 'mag-products-integration' ),
+				'label' => __( '6 hours', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => 12 * HOUR_IN_SECONDS,
-				'label'    => __( '12 hours', 'mag-products-integration' ),
+				'label' => __( '12 hours', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => DAY_IN_SECONDS,
-				'label'    => __( '1 day', 'mag-products-integration' ),
+				'label' => __( '1 day', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => 3 * DAY_IN_SECONDS,
-				'label'    => __( '3 days', 'mag-products-integration' ),
+				'label' => __( '3 days', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => WEEK_IN_SECONDS,
-				'label'    => __( '1 week', 'mag-products-integration' ),
+				'label' => __( '1 week', 'mag-products-integration' ),
 			),
 			array(
 				'lifetime' => YEAR_IN_SECONDS,
-				'label'    => __( '1 year', 'mag-products-integration' ),
+				'label' => __( '1 year', 'mag-products-integration' ),
 			),
 		);
 
@@ -165,22 +164,22 @@ class Store_Magento1 extends Store_Abstract {
 		if ( Mag::get_instance()->is_ready() ) {
 			$atts = shortcode_atts(
 				array(
-					'limit'        => '12',
-					'title'        => 'h2',
-					'class'        => '',
-					'sku'          => '',
-					'category'     => '',
-					'name'         => '',
-					'store'        => get_option( 'mag_products_integration_default_store_code', '' ),
-					'target'       => '',
-					'dir'          => 'desc',
-					'order'        => 'entity_id',
-					'prefix'       => '',
-					'suffix'       => ' $',
-					'image_width'  => '',
+					'limit' => '12',
+					'title' => 'h2',
+					'class' => '',
+					'sku' => '',
+					'category' => '',
+					'name' => '',
+					'store' => get_option( 'mag_products_integration_default_store_code', '' ),
+					'target' => '',
+					'dir' => 'desc',
+					'order' => 'entity_id',
+					'prefix' => '',
+					'suffix' => ' $',
+					'image_width' => '',
 					'image_height' => '',
-					'hide_image'   => false,
-					'description'  => true,
+					'hide_image' => false,
+					'description' => true,
 				), $atts, 'magento'
 			);
 
@@ -247,10 +246,10 @@ class Store_Magento1 extends Store_Abstract {
 			}
 
 			$shortcode_id = sha1( serialize( $filters ) . $store );
-			$products     = $this->retrieve_products( $filters, $store, $shortcode_id );
+			$products = $this->retrieve_products( $filters, $store, $shortcode_id );
 
 			$description_length = false;
-			$show_description   = true;
+			$show_description = true;
 			if ( is_numeric( $atts['description'] ) ) {
 				$description_length = abs( intval( $atts['description'] ) );
 				if ( 0 == $description_length ) {
@@ -398,18 +397,18 @@ class Store_Magento1 extends Store_Abstract {
 	 */
 	protected function retrieve_products( $filters, $store, $shortcode_id ) {
 		$fetch_from_magento = true;
-		$products           = array();
+		$products = array();
 		if ( Mag::get_instance()->get_cache()->is_enabled() ) {
 			if ( ! Mag::get_instance()->get_cache()->is_expired( $shortcode_id ) ) {
 				$fetch_from_magento = false;
-				$products           = Mag::get_instance()->get_cache()->get_cached_products( $shortcode_id );
+				$products = Mag::get_instance()->get_cache()->get_cached_products( $shortcode_id );
 				if ( empty( $products ) ) {
 					$fetch_from_magento = true;
 				}
 			}
 		}
 		if ( $fetch_from_magento ) {
-			$url        = 'products?';
+			$url = 'products?';
 			$http_query = '';
 
 			if ( is_array( $filters ) && count( $filters ) > 0 ) {
@@ -454,10 +453,10 @@ class Store_Magento1 extends Store_Abstract {
 					if ( is_array( $response ) && 200 == $response['response']['code'] ) {
 						$product_arr = json_decode( $response['body'], true );
 
-						$products[ $key ]['url']         = $product_arr['url'];
+						$products[ $key ]['url'] = $product_arr['url'];
 						$products[ $key ]['is_in_stock'] = $product_arr['is_in_stock'];
-						$products[ $key ]['type_id']     = $product_arr['type_id'];
-						$products[ $key ]['image_url']   = $product_arr['image_url'];
+						$products[ $key ]['type_id'] = $product_arr['type_id'];
+						$products[ $key ]['image_url'] = $product_arr['image_url'];
 						$products[ $key ]['buy_now_url'] = $product_arr['buy_now_url'];
 					}
 				}
@@ -518,7 +517,7 @@ class Store_Magento1 extends Store_Abstract {
 					foreach ( $value as $v ) {
 						$get_filters['filter'][ $i ] = array(
 							'attribute' => $key,
-							'like'      => $v,
+							'like' => $v,
 						);
 						$i ++;
 					}
@@ -529,32 +528,32 @@ class Store_Magento1 extends Store_Abstract {
 
 		if ( ! empty( $store ) ) {
 			$get_filters['___store'] = $store;
-			$get_filters['store']    = $store;
+			$get_filters['store'] = $store;
 		}
 
 		return http_build_query( $get_filters );
 	}
 
 	public function register_settings() {
-		register_setting(
-			'mag_products_integration', 'mag_products_integration_rest_api_url', array(
+		$this->register_setting(
+			'mag_products_integration_rest_api_url', array(
 				$this,
 				'validate_rest_api_url',
 			)
 		);
-		register_setting(
-			'mag_products_integration', 'mag_products_integration_cache_enabled', array(
+		$this->register_setting(
+			'mag_products_integration_cache_enabled', array(
 				$this,
 				'validate_cache_enabled',
 			)
 		);
-		register_setting(
-			'mag_products_integration', 'mag_products_integration_cache_lifetime', array(
+		$this->register_setting(
+			'mag_products_integration_cache_lifetime', array(
 				$this,
 				'validate_cache_lifetime',
 			)
 		);
-		register_setting( 'mag_products_integration', 'mag_products_integration_disable_customizer_css' );
+		$this->register_setting( 'mag_products_integration_disable_customizer_css' );
 	}
 
 	/**
@@ -637,7 +636,7 @@ class Store_Magento1 extends Store_Abstract {
 					if ( is_array( $response ) && ! empty( $response['body'] ) ) {
 						$decoded_array = json_decode( $response['body'], true );
 						if ( null !== $decoded_array ) {
-							$valid                                 = true;
+							$valid = true;
 							$mag_products_integration_rest_api_url = '';
 							add_settings_error(
 								'mag_products_integration',
@@ -721,5 +720,55 @@ class Store_Magento1 extends Store_Abstract {
 		}
 
 		return $mag_products_integration_cache_lifetime;
+	}
+
+	/**
+	 * Show the Magento module not installed notice.
+	 *
+	 * @since 1.0.0
+	 */
+	public function notify_magento_module_not_verified() {
+		?>
+		<div class="error notice is-dismissible">
+			<p>
+				<?php
+				_e(
+					'Please verify Magento module installation and load available stores. <a id="dismiss-module-notice" href="#">Dismiss this notice, I am not going to use the Magento module.</a>',
+					'mag-products-integration'
+				);
+				?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Determine if the plugin if fully installed or not.
+	 *
+	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
+	 * @since 1.0.0
+	 *
+	 */
+	public function is_module_installed() {
+		$url_validated = get_option( 'mag_products_integration_rest_api_url_validated' );
+		$default_store_code = get_option( 'mag_products_integration_default_store_code' );
+		$module_installed = get_option( 'mag_products_integration_magento_module_installed' );
+		$stores_code = get_option( 'mag_products_integration_stores_code' );
+
+		return ( $url_validated && ! empty( $default_store_code ) && ! empty( $module_installed ) && ! empty( $stores_code ) );
+	}
+
+	/**
+	 * Verify if the Magento 1 extension is installed.
+	 *
+	 * @since 2.0.0
+	 */
+	public function additional_verifications() {
+		if ( ! $this->is_module_installed() ) {
+			$dismiss_module_notice = get_option( 'mag_products_integration_dismiss_module_notice', false );
+			if ( ! $dismiss_module_notice ) {
+				add_action( 'admin_notices', array( $this, 'notify_magento_module_not_verified' ) );
+			}
+		}
 	}
 }

@@ -142,25 +142,9 @@ class Mag {
 	 *
 	 */
 	public function is_ready() {
-		$is_ready = get_option( 'mag_products_integration_rest_api_url' ) && get_option( 'mag_products_integration_rest_api_url_validated' );
+		$is_ready = $this->get_store_manager()->get_store()->ready();
 
 		return $is_ready;
-	}
-
-	/**
-	 * Determine if the plugin if fully installed or not.
-	 *
-	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
-	 * @since 1.0.0
-	 *
-	 */
-	public function is_module_installed() {
-		$url_validated = get_option( 'mag_products_integration_rest_api_url_validated' );
-		$default_store_code = get_option( 'mag_products_integration_default_store_code' );
-		$module_installed = get_option( 'mag_products_integration_magento_module_installed' );
-		$stores_code = get_option( 'mag_products_integration_stores_code' );
-
-		return ( $url_validated && ! empty( $default_store_code ) && ! empty( $module_installed ) && ! empty( $stores_code ) );
 	}
 
 	/**

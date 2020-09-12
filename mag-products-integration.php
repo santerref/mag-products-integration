@@ -51,6 +51,20 @@ if ( ! function_exists( 'magepress' ) ) {
 	register_deactivation_hook( __FILE__, array( magepress(), 'deactivate' ) );
 }
 
+if ( ! function_exists( 'magepress_store_manager' ) ) {
+
+	function magepress_store_manager() {
+		static $magepress_store_manager;
+
+		if ( ! isset( $magepress_store_manager ) ) {
+			$magepress_store_manager = MagePress\Mag::get_instance()->get_store_manager();
+		}
+
+		return $magepress_store_manager;
+	}
+
+}
+
 if ( ! function_exists( 'magepress_admin' ) ) {
 	/**
 	 * Create global instance of the plugin admin. Allows developer to remove/add plugin actions/filters.
@@ -73,16 +87,3 @@ if ( ! function_exists( 'magepress_admin' ) ) {
 	magepress_admin();
 }
 
-if ( ! function_exists( 'magepress_store_manager' ) ) {
-
-	function magepress_store_manager() {
-		static $magepress_store_manager;
-
-		if ( ! isset( $magepress_store_manager ) ) {
-			$magepress_store_manager = MagePress\Mag::get_instance()->get_store_manager();
-		}
-
-		return $magepress_store_manager;
-	}
-
-}
