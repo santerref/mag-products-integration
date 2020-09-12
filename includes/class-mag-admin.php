@@ -314,13 +314,17 @@ class Mag_Admin {
 	 * @since 1.0.0
 	 */
 	public function admin_menu() {
+		ob_start();
+		readfile( plugin_dir_path( dirname( __FILE__ ) ) . 'images/icon.svg' );
+		$icon = ob_get_clean();
+
 		add_menu_page(
 			__( 'Magento', 'mag-products-integration' ),
 			__( 'Magento', 'mag-products-integration' ),
 			'manage_options',
 			__FILE__,
 			array( Mag::get_instance()->get_admin(), 'page' ),
-			plugins_url( 'images/icon-16x16.png', dirname( __FILE__ ) )
+			'data:image/svg+xml;base64,' . base64_encode( $icon )
 		);
 	}
 
