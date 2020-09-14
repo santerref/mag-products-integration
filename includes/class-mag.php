@@ -56,9 +56,9 @@ class Mag {
 	/**
 	 * Return the singleton of the current class.
 	 *
+	 * @return Mag Singleton
 	 * @since 1.0.0
 	 *
-	 * @return Mag Singleton
 	 */
 	public static function get_instance() {
 		if ( empty( self::$instance ) || ! self::$instance instanceof self ) {
@@ -95,11 +95,11 @@ class Mag {
 	/**
 	 * Add Settings link on the plugins page.
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param array $links Links shown under the plugin name in the plugins page.
 	 *
 	 * @return array
+	 * @since 1.0.0
+	 *
 	 */
 	public function add_action_links( $links ) {
 		$settings = array(
@@ -112,9 +112,9 @@ class Mag {
 	/**
 	 * Return the instance of the administration class.
 	 *
+	 * @return Mag_Admin Instance.
 	 * @since 1.0.0
 	 *
-	 * @return Mag_Admin Instance.
 	 */
 	public function get_admin() {
 		return $this->admin;
@@ -123,9 +123,9 @@ class Mag {
 	/**
 	 * Return the instance of the cache class.
 	 *
+	 * @return Mag_Cache Instance.
 	 * @since 1.2.0
 	 *
-	 * @return Mag_Cache Instance.
 	 */
 	public function get_cache() {
 		return $this->cache;
@@ -134,9 +134,9 @@ class Mag {
 	/**
 	 * The plugin is ready when a valid API endpoint is available.
 	 *
+	 * @return string Valid Magento REST API endpoint or empty string.
 	 * @since 1.0.0
 	 *
-	 * @return string Valid Magento REST API endpoint or empty string.
 	 */
 	public function is_ready() {
 		$is_ready = get_option( 'mag_products_integration_rest_api_url' ) && get_option( 'mag_products_integration_rest_api_url_validated' );
@@ -147,9 +147,9 @@ class Mag {
 	/**
 	 * Determine if the plugin if fully installed or not.
 	 *
+	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
 	 * @since 1.0.0
 	 *
-	 * @return bool True if the plugin is configured and the Magento module installed, false otherwise.
 	 */
 	public function is_module_installed() {
 		$url_validated      = get_option( 'mag_products_integration_rest_api_url_validated' );
@@ -190,7 +190,7 @@ class Mag {
 	public function output_colors_css() {
 		$hide_css = get_option( 'mag_products_integration_disable_customizer_css', false );
 
-		if ( false === $hide_css ) {
+		if ( empty( $hide_css ) || false === $hide_css ) {
 			$current_price_color = get_theme_mod( 'magento_color_current_price', '#3399cc' );
 			$regular_price_color = get_theme_mod( 'magento_color_regular_price', '#858585' );
 			$button_color        = get_theme_mod( 'magento_color_button', '#3399cc' );
