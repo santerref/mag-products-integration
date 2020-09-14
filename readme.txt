@@ -3,7 +3,7 @@ Contributors: santerref
 Tags: magento, product, listing, wordpress, rest, api, e-commerce, webshop, shortcode, integration, post, posts, admin, page, commerce, products, free
 Requires at least: 4.6
 Tested up to: 5.5
-Stable tag: 1.2.12
+Stable tag: 1.2.13
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,9 @@ For developers: [actions and filters documentation](http://magentowp.santerref.c
 4. Customizer settings
 
 == Changelog ==
+
+= 1.2.13 =
+* Fix an issue that prevents custom CSS from generating.
 
 = 1.2.12 =
 * Fix responsive breakpoints (0-575px 1 column, 576-767px 2 columns, > 768px 3 columns)

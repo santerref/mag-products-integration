@@ -1,0 +1,14 @@
+/.wordpress-org
+/.git
+/.github
+/node_modules
+/bin
+/tests
+.distignore
+.gitignore
+.phpcs.xml.dist
+.editorconfig
+.travis.yml
+phpcs.ruleset.xml
+phpunit.xml.dist
+README.md
